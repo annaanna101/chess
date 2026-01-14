@@ -43,7 +43,6 @@ public class ChessBoard {
                 squares[row][col] = null;
             }
         }
-        int[] pawnRows = {2,7};
         for (int col = 1; col <= 8; col++){
             ChessPosition position = new ChessPosition(2, col);
             ChessPiece pawn = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN);

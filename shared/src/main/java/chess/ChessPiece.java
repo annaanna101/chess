@@ -73,8 +73,8 @@ public class ChessPiece {
         if (piece.getPieceType() == PieceType.KING){
             KingMoves kingMoves = new KingMoves(board,myPosition,piece);
             Collection<ChessMove> moves = new ArrayList<>();
-            for (ChessPosition endposition : kingMoves.calculateMoves()){
-                moves.add(new ChessMove(myPosition, endposition,null));
+            for (ChessPosition endPosition : kingMoves.calculateMoves()){
+                moves.add(new ChessMove(myPosition, endPosition,null));
             }
             return moves;
         }

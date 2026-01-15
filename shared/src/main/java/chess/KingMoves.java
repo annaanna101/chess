@@ -25,19 +25,18 @@ public class KingMoves {
                 if (dRow == 0 && dCol == 0) continue;
                 int newRow = row +dRow;
                 int newCol = col + dCol;
-                ChessPosition newposition = new ChessPosition(newRow,newCol)
-                ChessPiece peice = board.getPiece()
-                if (newRow >= 1 && newRow <= 8 && newCol>=1 && newCol <= 8){
-                    if (board == null){
-                        moves.add(new ChessPosition(newRow, newCol));
-                    } else if (board.getPiece()) {
-
-                    }
-
+                if (newRow < 1 || newRow > 8 || newCol < 1 || newCol > 8){
+                    continue;
+                }
+                ChessPosition newPosition = new ChessPosition(newRow,newCol);
+                ChessPiece peice = board.getPiece(newPosition);
+                if (peice == null){
+                    moves.add(newPosition);
+                } else if (peice.getTeamColor() != king.getTeamColor()) {
+                    moves.add(newPosition);
                 }
             }
         }
         return moves;
-
     }
 }

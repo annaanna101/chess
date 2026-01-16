@@ -104,6 +104,14 @@ public class ChessPiece {
             }
             return moves;
         }
+        if (piece.getPieceType() == PieceType.ROOK){
+            RookMoves rookMoves = new RookMoves(board,myPosition,piece);
+            Collection<ChessMove> moves = new ArrayList<>();
+            for (ChessPosition endPosition : rookMoves.calculateMoves()){
+                moves.add(new ChessMove(myPosition, endPosition,null));
+            }
+            return moves;
+        }
         return List.of();
     }
 }

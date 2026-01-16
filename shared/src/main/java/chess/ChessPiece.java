@@ -78,6 +78,24 @@ public class ChessPiece {
             }
             return moves;
         }
+        if (piece.getPieceType() == PieceType.PAWN) {
+            PawnMoves pawnMoves = new PawnMoves(board, myPosition, piece);
+            Collection<ChessMove> moves = new ArrayList<>();
+            for (ChessPosition endPosition : pawnMoves.calculateMoves()) {
+                boolean isPromotion =
+                        (piece.getTeamColor() == ChessGame.TeamColor.WHITE && endPosition.getRow() == 8) ||
+                                (piece.getTeamColor() == ChessGame.TeamColor.BLACK && endPosition.getRow() == 1);
+                if (isPromotion) {
+                    moves.add(new ChessMove(myPosition, endPosition, PieceType.QUEEN));
+                    moves.add(new ChessMove(myPosition, endPosition, PieceType.ROOK));
+                    moves.add(new ChessMove(myPosition, endPosition, PieceType.BISHOP));
+                    moves.add(new ChessMove(myPosition, endPosition, PieceType.KNIGHT));
+                } else {
+                    moves.add(new ChessMove(myPosition, endPosition, null));
+                }
+            }
+            return moves;
+        }
         return List.of();
     }
 }

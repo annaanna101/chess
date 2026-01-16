@@ -58,7 +58,6 @@ public class PawnMoves {
                 moves.add(diagonal);
             }
         }
-//        Still need to implement promotional cases.
         return moves;
     }
 }

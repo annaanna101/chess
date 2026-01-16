@@ -96,6 +96,14 @@ public class ChessPiece {
             }
             return moves;
         }
+        if (piece.getPieceType() == PieceType.BISHOP){
+            BishopMoves bishopMoves = new BishopMoves(board,myPosition,piece);
+            Collection<ChessMove> moves = new ArrayList<>();
+            for (ChessPosition endPosition : bishopMoves.calculateMoves()){
+                moves.add(new ChessMove(myPosition, endPosition,null));
+            }
+            return moves;
+        }
         return List.of();
     }
 }

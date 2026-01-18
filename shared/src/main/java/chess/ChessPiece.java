@@ -112,6 +112,14 @@ public class ChessPiece {
             }
             return moves;
         }
+        if (piece.getPieceType() == PieceType.QUEEN){
+            QueenMoves queenMoves = new QueenMoves(board, myPosition, piece);
+            Collection<ChessMove> moves = new ArrayList<>();
+            for (ChessPosition endPosition : queenMoves.calculateMoves()){
+                moves.add(new ChessMove(myPosition, endPosition, null));
+            }
+            return moves;
+        }
         return List.of();
     }
 }

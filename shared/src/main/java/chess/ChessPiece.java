@@ -120,6 +120,14 @@ public class ChessPiece {
             }
             return moves;
         }
+        if (piece.getPieceType() == PieceType.KNIGHT){
+            KnightMoves knightMoves = new KnightMoves(board, myPosition, piece);
+            Collection<ChessMove> moves = new ArrayList<>();
+            for (ChessPosition endPosition : knightMoves.calculateMoves()){
+                moves.add(new ChessMove(myPosition, endPosition, null));
+            }
+            return moves;
+        }
         return List.of();
     }
 }

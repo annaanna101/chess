@@ -1,6 +1,8 @@
 package chess;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * For a class that can manage a chess game, making moves on a board
@@ -48,7 +50,20 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
-        throw new RuntimeException("Not implemented");
+        ChessPiece piece = gameBoard.getPiece(startPosition);
+        if (piece == null || piece.getTeamColor() != teamTurn){
+            return new ArrayList<>();
+        }
+        Collection<ChessMove> rawMoves = piece.pieceMoves(gameBoard,startPosition);
+        Collection<ChessMove> legalMoves = new ArrayList<>();
+        /* for move in moves:
+                simulate move on temporary board
+                if my king is not in check:
+                    legalMoves.add(move)
+           return moves
+
+         */
+        return legalMoves;
     }
 
     /**
@@ -68,7 +83,36 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        ChessPosition kingPosition = null;
+        for (int row = 1; row <=8; row++){
+            for (int col = 1; col <=8; col++){
+                ChessPosition position = new ChessPosition(row,col);
+                ChessPiece piece = gameBoard.getPiece(position);
+                if (piece != null && piece.getPieceType() == ChessPiece.PieceType.KING && piece.getTeamColor() == teamColor){
+                    kingPosition = position;
+                    break;
+                }
+            }
+        }
+        if (kingPosition == null){
+            return true;
+        }
+        for (int row = 1; row <=8; row++) {
+            for (int col = 1; col <= 8; col++) {
+                ChessPosition position = new ChessPosition(row,col);
+                ChessPiece piece = gameBoard.getPiece(position);
+                if (piece != null && piece.getTeamColor() != teamColor){
+                    Collection<ChessMove> moves = piece.pieceMoves(gameBoard,position);
+                    for (ChessMove move : moves){
+                        ChessPosition endPos = move.getEndPosition();
+                        if (endPos == kingPosition){
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     /**

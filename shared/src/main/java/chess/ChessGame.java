@@ -137,7 +137,34 @@ public class ChessGame {
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        /* Things to check for:
+        1. Make sure the king is in check.
+        2. Try every legal move for the team in check
+        3. (If there is a move) simulate the move then re-check for check
+            - make a deep copy of the board and then check the move.
+        4. if any move escapes check -> not checkmate
+            - king moves, blocking the check, capturing the attacking piece.
+        5. If no escape moves exists -> checkmate
+         */
+        if (isInCheck(teamColor)){
+            // find all friendly pieces
+            List <ChessPosition> friendlyPiece = new ArrayList<>();
+            for (int row = 1; row <= 8; row++){
+                for (int col = 1; col <=8; col++){
+                    ChessPosition position = new ChessPosition(row,col);
+                    ChessPiece piece = gameBoard.getPiece(position);
+                    if (piece != null && piece.getTeamColor() == teamColor){
+                        friendlyPiece.add (position);
+                    }
+                }
+            }
+            // generate every legal move for those pieces
+            // simulate each move (one at a time)
+            // re-check for check
+            // if no longer in check, return false
+            // if every move checked and still in check return true
+        }
+        return false;
     }
 
     /**

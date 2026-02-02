@@ -11,8 +11,12 @@ import java.util.Objects;
  */
 public class ChessBoard {
     ChessPiece[][] squares = new ChessPiece[8][8];
-    public ChessBoard() {
-        
+    public ChessBoard(ChessBoard other) {
+        for (int row = 0; row < 8; row++) {
+            for (int col = 0; col < 8; col++) {
+                this.squares[row][col] = other.squares[row][col];
+            }
+        }
     }
 
     /**

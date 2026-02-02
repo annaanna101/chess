@@ -148,18 +148,38 @@ public class ChessGame {
          */
         if (isInCheck(teamColor)){
             // find all friendly pieces
-            List <ChessPosition> friendlyPiece = new ArrayList<>();
+            List <ChessPosition> friendlyPosition = new ArrayList<>();
             for (int row = 1; row <= 8; row++){
                 for (int col = 1; col <=8; col++){
                     ChessPosition position = new ChessPosition(row,col);
                     ChessPiece piece = gameBoard.getPiece(position);
                     if (piece != null && piece.getTeamColor() == teamColor){
-                        friendlyPiece.add (position);
+                        friendlyPosition.add (position);
                     }
                 }
             }
             // generate every legal move for those pieces
+            Collection<ChessMove> moves = new ArrayList<>();
+            for (ChessPosition pos : friendlyPosition){
+                ChessPiece piece1 = gameBoard.getPiece(pos);
+                Collection<ChessMove> legalMoves = piece1.pieceMoves(gameBoard,pos);
+                moves.addAll(legalMoves);
+            }
             // simulate each move (one at a time)
+            for (ChessMove simMoves : moves){
+                ChessBoard boardCopy = new ChessBoard(gameBoard);
+                ChessMove sMove = simMoves;
+                ChessPiece piece2 = boardCopy.getPiece(sMove.getStartPosition());
+                if (sMove.getPromotionPiece() != null) {
+                    boardCopy.addPiece(
+                            sMove.getEndPosition(),
+                            new ChessPiece(piece2.getTeamColor(),sMove.getPromotionPiece())
+                    );
+                } else {
+                    boardCopy.addPiece(sMove.getEndPosition(), piece2);
+                }
+                boardCopy.addPiece(sMove.getStartPosition(), null);
+            }
             // re-check for check
             // if no longer in check, return false
             // if every move checked and still in check return true

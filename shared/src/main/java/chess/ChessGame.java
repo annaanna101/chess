@@ -88,6 +88,9 @@ public class ChessGame {
      * @throws InvalidMoveException if move is invalid
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
+        ChessPosition start = move.getStartPosition();
+        ChessPiece.PieceType piece = move.getPromotionPiece();
+        ChessPosition end = move.getEndPosition();
         throw new RuntimeException("Not implemented");
     }
 
@@ -120,7 +123,7 @@ public class ChessGame {
                     Collection<ChessMove> moves = piece.pieceMoves(gameBoard,position);
                     for (ChessMove move : moves){
                         ChessPosition endPos = move.getEndPosition();
-                        if (endPos == kingPosition){
+                        if (endPos.equals(kingPosition)){
                             return true;
                         }
                     }
@@ -146,6 +149,7 @@ public class ChessGame {
             - king moves, blocking the check, capturing the attacking piece.
         5. If no escape moves exists -> checkmate
          */
+        ChessBoard originalBoard = gameBoard;
         if (isInCheck(teamColor)){
             // find all friendly pieces
             List <ChessPosition> friendlyPosition = new ArrayList<>();
@@ -167,7 +171,7 @@ public class ChessGame {
             }
             // simulate each move (one at a time)
             for (ChessMove simMoves : moves){
-                ChessBoard boardCopy = new ChessBoard(gameBoard);
+                ChessBoard boardCopy = new ChessBoard(originalBoard);
                 ChessMove sMove = simMoves;
                 ChessPiece piece2 = boardCopy.getPiece(sMove.getStartPosition());
                 if (sMove.getPromotionPiece() != null) {
@@ -179,10 +183,17 @@ public class ChessGame {
                     boardCopy.addPiece(sMove.getEndPosition(), piece2);
                 }
                 boardCopy.addPiece(sMove.getStartPosition(), null);
+                gameBoard = boardCopy;
+                // re-check for check
+                boolean stillInCheck = isInCheck(teamColor);
+                gameBoard = originalBoard;
+                if (!stillInCheck){
+                    // if no longer in check, return false
+                    return false;
+                }
             }
-            // re-check for check
-            // if no longer in check, return false
             // if every move checked and still in check return true
+            return true;
         }
         return false;
     }

@@ -71,13 +71,26 @@ public class ChessGame {
         }
         Collection<ChessMove> rawMoves = piece.pieceMoves(gameBoard,startPosition);
         Collection<ChessMove> legalMoves = new ArrayList<>();
-        /* for move in moves:
-                simulate move on temporary board
-                if my king is not in check:
-                    legalMoves.add(move)
-           return moves
-
-         */
+        ChessBoard originalBoard = gameBoard;
+        for (ChessMove moves : rawMoves){
+            ChessBoard boardCopy = new ChessBoard(originalBoard);
+            ChessPiece sPiece = boardCopy.getPiece(moves.getStartPosition());
+            if (moves.getPromotionPiece() != null){
+                boardCopy.addPiece(
+                        moves.getEndPosition(),
+                        new ChessPiece(sPiece.getTeamColor(),moves.getPromotionPiece())
+                );
+            } else {
+                boardCopy.addPiece(moves.getEndPosition(), sPiece);
+            }
+            boardCopy.addPiece(moves.getStartPosition(), null);
+            gameBoard = boardCopy;
+            boolean inCheck = isInCheck(sPiece.getTeamColor());
+            gameBoard = originalBoard;
+            if (!inCheck){
+                legalMoves.add(moves);
+            }
+        }
         return legalMoves;
     }
 

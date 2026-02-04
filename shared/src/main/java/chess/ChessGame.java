@@ -13,9 +13,11 @@ import java.util.Objects;
  */
 public class ChessGame {
     TeamColor teamTurn = TeamColor.WHITE;
-    ChessBoard gameBoard = new ChessBoard();
+    ChessBoard gameBoard;
 
     public ChessGame() {
+        this.gameBoard = new ChessBoard();
+        this.gameBoard.resetBoard();
 
     }
 
@@ -86,6 +88,8 @@ public class ChessGame {
             boardCopy.addPiece(moves.getStartPosition(), null);
             gameBoard = boardCopy;
             boolean inCheck = isInCheck(sPiece.getTeamColor());
+            //add new piece at the end position
+            //at old position create null pointer
             gameBoard = originalBoard;
             if (!inCheck){
                 legalMoves.add(moves);

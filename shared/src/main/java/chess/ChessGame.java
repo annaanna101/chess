@@ -104,7 +104,14 @@ public class ChessGame {
         ChessPosition start = move.getStartPosition();
         ChessPiece.PieceType piece = move.getPromotionPiece();
         ChessPosition end = move.getEndPosition();
-        throw new RuntimeException("Not implemented");
+        Collection<ChessMove> legalMoves = validMoves(start);
+        if(legalMoves.contains(move)){
+            ChessPosition position = new ChessPosition(start.getRow(), end.getRow());
+            ChessPiece piece1 = gameBoard.getPiece(position);
+            ChessPosition newPosition = new ChessPosition(end.getRow(), end.getColumn());
+            ChessPiece target = gameBoard.getPiece(newPosition);
+        }
+        throw new InvalidMoveException();
     }
 
     /**
@@ -183,9 +190,8 @@ public class ChessGame {
                 moves.addAll(legalMoves);
             }
             // simulate each move (one at a time)
-            for (ChessMove simMoves : moves){
+            for (ChessMove sMove : moves){
                 ChessBoard boardCopy = new ChessBoard(originalBoard);
-                ChessMove sMove = simMoves;
                 ChessPiece piece2 = boardCopy.getPiece(sMove.getStartPosition());
                 if (sMove.getPromotionPiece() != null) {
                     boardCopy.addPiece(

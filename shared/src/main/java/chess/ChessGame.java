@@ -68,7 +68,7 @@ public class ChessGame {
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
         ChessPiece piece = gameBoard.getPiece(startPosition);
-        if (piece == null || piece.getTeamColor() != teamTurn){
+        if (piece == null){
             return new ArrayList<>();
         }
         Collection<ChessMove> rawMoves = piece.pieceMoves(gameBoard,startPosition);
@@ -88,11 +88,10 @@ public class ChessGame {
             boardCopy.addPiece(moves.getStartPosition(), null);
             gameBoard = boardCopy;
             boolean inCheck = isInCheck(sPiece.getTeamColor());
-            //add new piece at the end position
-            //at old position create null pointer
             gameBoard = originalBoard;
-            if (!inCheck){
+            if (!inCheck) {
                 legalMoves.add(moves);
+
             }
         }
         return legalMoves;
@@ -113,6 +112,9 @@ public class ChessGame {
             throw new InvalidMoveException();
         }
         ChessPiece movedPiece = gameBoard.getPiece(start);
+        if (movedPiece.getTeamColor() != teamTurn){
+            throw new InvalidMoveException();
+        }
         if (promotionPiece != null){
             ChessPiece promotedPiece = new ChessPiece(movedPiece.getTeamColor(),promotionPiece);
             gameBoard.addPiece(end,promotedPiece);
@@ -238,7 +240,23 @@ public class ChessGame {
      * @return True if the specified team is in stalemate, otherwise false
      */
     public boolean isInStalemate(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        if (isInCheck(teamColor)){
+            return false;
+        }
+        if (teamColor == teamTurn) {
+            Collection<ChessMove> legalMoves = new ArrayList<>();
+            for (int row = 1; row <= 8; row++) {
+                for (int col = 1; col <= 8; col++) {
+                    ChessPosition position = new ChessPosition(row, col);
+                    ChessPiece piece = gameBoard.getPiece(position);
+                    if (piece != null && piece.getTeamColor() == teamColor) {
+                        legalMoves = validMoves(position);
+                    }
+                }
+            }
+            return legalMoves.isEmpty();
+        }
+        return false;
     }
 
     /**

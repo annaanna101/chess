@@ -22,17 +22,19 @@ public class KingMoves {
         int[] directions = {-1,0,1};
         for (int dRow : directions) {
             for (int dCol : directions){
-                if (dRow == 0 && dCol == 0) continue;
+                if (dRow == 0 && dCol == 0){
+                    continue;
+                }
                 int newRow = row +dRow;
                 int newCol = col + dCol;
                 if (newRow < 1 || newRow > 8 || newCol < 1 || newCol > 8){
                     continue;
                 }
                 ChessPosition newPosition = new ChessPosition(newRow,newCol);
-                ChessPiece peice = board.getPiece(newPosition);
-                if (peice == null){
+                ChessPiece piece = board.getPiece(newPosition);
+                if (piece == null){
                     moves.add(newPosition);
-                } else if (peice.getTeamColor() != king.getTeamColor()) {
+                } else if (piece.getTeamColor() != king.getTeamColor()) {
                     moves.add(newPosition);
                 }
             }

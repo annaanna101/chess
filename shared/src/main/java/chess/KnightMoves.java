@@ -38,7 +38,6 @@ public class KnightMoves {
                 moves.add(newPosition);
             }
         }
-
         return moves;
     }
 }

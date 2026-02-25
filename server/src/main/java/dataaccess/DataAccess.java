@@ -14,5 +14,6 @@ public interface DataAccess {
     Collection<GameD> listGames() throws ResponseParseException;
     AuthD createAuth(String username) throws ResponseParseException;
     AuthD getAuth(String token) throws ResponseParseException;
+    void deleteAuth(String token) throws ResponseParseException;
     void clear() throws ResponseParseException;
 }

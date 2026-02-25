@@ -1,10 +1,15 @@
-package server;
+package service;
 
 import Model.*;
+import dataaccess.DataAccess;
 
-import static server.GenerateToken.generateToken;
+import static service.GenerateToken.generateToken;
 
 public class UserService {
+    private final DataAccess dataAccess;
+    public UserService(DataAccess dataAccess){
+        this.dataAccess = dataAccess;
+    }
     public RegisterResult register(RegisterRequest registerRequest){
         getUser(registerRequest.username());
         createUser(registerRequest.username(),registerRequest.password(), registerRequest.email());

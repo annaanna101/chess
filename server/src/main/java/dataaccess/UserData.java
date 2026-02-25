@@ -5,7 +5,8 @@ public class UserData {
     // password = string
     // email = string
 
-    void insertUser(UserData u) throws DataAccessException{
+    void createUser(UserData u) throws DataAccessException{
 
     }
+
 }

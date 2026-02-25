@@ -2,7 +2,7 @@ package Model;
 
 import chess.ChessGame;
 
-public record GameData(
+public record GameD(
         int gameID,
         String whiteUsername,
         String blackUsername,

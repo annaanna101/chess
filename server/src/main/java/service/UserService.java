@@ -3,6 +3,7 @@ package service;
 import Model.*;
 import dataaccess.DataAccess;
 import dataaccess.DataAccessException;
+import io.javalin.http.BadRequestResponse;
 
 public class UserService {
     private final DataAccess dataAccess;
@@ -11,8 +12,11 @@ public class UserService {
     }
 
     public RegisterResult register(RegisterRequest registerRequest) throws DataAccessException {
+        if (registerRequest.username() == null || registerRequest.password() == null){
+            throw new DataAccessException("Error: bad request");
+        }
         if (dataAccess.getUser(registerRequest.username())!= null) {
-            throw new DataAccessException("Error: Username is already in use");
+            throw new DataAccessException("Error: Username is already taken");
         }
         UserD user = new UserD(registerRequest.username(), registerRequest.password(), registerRequest.email());
         dataAccess.addUser(user);
@@ -22,6 +26,9 @@ public class UserService {
 
     public LoginResult login(LoginRequest loginRequest) throws DataAccessException {
         UserD user = dataAccess.getUser(loginRequest.username());
+        if (loginRequest.username() == null || loginRequest.password() == null){
+            throw new DataAccessException("Error: bad request");
+        }
         if (user == null || !user.password().equals(loginRequest.password())) {
             throw new DataAccessException("Error: unauthorized");
         }

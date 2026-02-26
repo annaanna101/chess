@@ -49,5 +49,6 @@ public class UserService {
     public void clearAuth() throws DataAccessException{
         dataAccess.clearAuths();
     }
+
 }
 

@@ -2,6 +2,7 @@ package Handler;
 import Model.RegisterRequest;
 import Model.RegisterResult;
 import com.google.gson.Gson;
+import dataaccess.DataAccessException;
 import io.javalin.http.Context;
 import passoff.exception.ResponseParseException;
 import service.UserService;
@@ -13,7 +14,7 @@ public class RegistrationHandler{
     public RegistrationHandler(UserService userService){
         this.userService = userService;
     }
-    public void register(Context ctx) throws ResponseParseException {
+    public void register(Context ctx) throws DataAccessException {
         RegisterRequest request =
                 gson.fromJson(ctx.body(), RegisterRequest.class);
 

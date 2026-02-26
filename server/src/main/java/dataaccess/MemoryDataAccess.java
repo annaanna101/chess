@@ -52,9 +52,13 @@ public class MemoryDataAccess implements DataAccess{
         return authTokens.get(token);
     }
 
-    public void clear(){
+    public void clearAuths() throws DataAccessException {
         authTokens.clear();
+    }
+    public void clearUsers() throws DataAccessException {
         users.clear();
+    }
+    public void clearGames() throws DataAccessException {
         games.clear();
     }
 }

@@ -3,6 +3,7 @@ package dataaccess;
 import Model.AuthD;
 import Model.GameD;
 import Model.UserD;
+import chess.ChessGame;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -34,7 +35,12 @@ public class MemoryDataAccess implements DataAccess{
     public Collection<GameD> listGames() {
         return games.values();
     }
-
+    public int createGame(String gameName){
+        ChessGame chessGame = new ChessGame();
+        GameD newGame = new GameD(nextGameId, null, null, gameName, chessGame);
+        games.put(nextGameId, newGame);
+        return newGame.gameID();
+    }
     public AuthD createAuth(String username){
         if (!users.containsKey(username)){
             throw new RuntimeException("User does not exist!");

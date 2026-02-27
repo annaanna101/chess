@@ -31,6 +31,5 @@ public class LogoutHandler {
             }
             ctx.result(gson.toJson(new Server.ErrorResponse(message)));
         }
-
     }
 }

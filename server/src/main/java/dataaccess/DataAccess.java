@@ -17,4 +17,5 @@ public interface DataAccess {
     void clearUsers() throws DataAccessException;
     void clearAuths() throws DataAccessException;
     void clearGames() throws DataAccessException;
+    int createGame(String gameName) throws DataAccessException;
 }

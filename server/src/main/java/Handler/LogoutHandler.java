@@ -13,7 +13,7 @@ public class LogoutHandler {
     private final Gson gson = new Gson();
 
     public LogoutHandler(UserService userService) {this.userService = userService;}
-    public void logout(Context ctx) throws DataAccessException {
+    public void logout(Context ctx){
         try {
             String authToken = ctx.header("authorization");
             if (authToken == null || authToken.isBlank()){

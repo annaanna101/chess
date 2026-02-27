@@ -30,6 +30,7 @@ public class Server {
         javalin.delete("/session", logoutHandler::logout);
         javalin.delete("/db",clearHandler::clearAll);
         javalin.post("/game", createGameHandler::createGame);
+//        javalin.get("/game", listGameHandler::listGame);
 
         javalin.exception(DataAccessException.class, (ex, ctx) -> {
             ctx.status(500);

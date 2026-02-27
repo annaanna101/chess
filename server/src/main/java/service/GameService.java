@@ -12,16 +12,16 @@ public class GameService {
         this.dataAccess = dataAccess;
     }
 
-    public int createGame(CreateRequest createRequest) throws DataAccessException {
-        if (createRequest.authToken() == null){
+    public CreateResult createGame(CreateRequest createRequest, String authToken) throws DataAccessException {
+        if (authToken == null || createRequest.gameName() == null){
             throw new DataAccessException("Error: bad request");
         }
-        if (dataAccess.getAuth(createRequest.authToken()) == null){
+        if (dataAccess.getAuth(authToken) == null){
             throw new DataAccessException("Error: unauthorized");
         }
-        dataAccess.getAuth(createRequest.authToken());
-        dataAccess.createGame(createRequest.gameName());
-        return createGame(createRequest);
+        dataAccess.getAuth(authToken);
+        int gameID = dataAccess.createGame(createRequest.gameName());
+        return new CreateResult(gameID);
     }
 //    public void joinGame(JoinRequest joinRequest) throws DataAccessException{}
 //    public Collection<GameD> listGame(ListRequest listRequest) throws DataAccessException{}

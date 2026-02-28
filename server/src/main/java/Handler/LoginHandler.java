@@ -5,7 +5,6 @@ import Model.LoginResult;
 import com.google.gson.Gson;
 import dataaccess.DataAccessException;
 import io.javalin.http.Context;
-import passoff.exception.ResponseParseException;
 import server.Server;
 import service.UserService;
 

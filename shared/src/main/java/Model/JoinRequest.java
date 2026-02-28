@@ -1,7 +1,7 @@
 package Model;
 
-public class JoinRequest {
-    String authToken;
-    int gameID;
-    UserD user;
+public record JoinRequest (
+        Integer gameID,
+        String playerColor
+){
 }

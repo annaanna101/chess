@@ -5,6 +5,7 @@ import dataaccess.DataAccess;
 import dataaccess.DataAccessException;
 
 import java.util.Collection;
+import java.util.Collections;
 
 public class GameService {
     private final DataAccess dataAccess;
@@ -50,14 +51,20 @@ public class GameService {
 //        int gameID;
 //        GameD game;
 //    }
-    public Collection<GameD> listGame(String authToken) throws DataAccessException{
+    public Collection<GameSummary> listGame(String authToken) throws DataAccessException{
         if (authToken == null){
             throw new DataAccessException("Error: bad request");
         }
         if (dataAccess.getAuth(authToken) == null){
             throw new DataAccessException("Error: unauthorized");
         }
-        return dataAccess.listGames();
-
+        Collection<GameSummary> games = dataAccess.listGames();
+        if (games == null){
+            return Collections.emptyList();
+        }
+        return games;
+    }
+    public void clearGames() throws DataAccessException{
+        dataAccess.clearGames();
     }
 }

@@ -20,7 +20,7 @@ public class Server {
         RegistrationHandler registrationHandler = new RegistrationHandler(userService);
         LoginHandler loginHandler = new LoginHandler(userService);
         LogoutHandler logoutHandler = new LogoutHandler(userService);
-        ClearHandler clearHandler = new ClearHandler(userService);
+        ClearHandler clearHandler = new ClearHandler(userService, gameService);
         CreateGameHandler createGameHandler = new CreateGameHandler(gameService);
         ListHandler listHandler = new ListHandler(gameService);
 

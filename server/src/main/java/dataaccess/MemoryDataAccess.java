@@ -2,6 +2,7 @@ package dataaccess;
 
 import Model.AuthD;
 import Model.GameD;
+import Model.GameSummary;
 import Model.UserD;
 import chess.ChessGame;
 
@@ -32,8 +33,15 @@ public class MemoryDataAccess implements DataAccess{
         return games.get(gameID);
     }
 
-    public Collection<GameD> listGames() {
-        return games.values();
+    public Collection<GameSummary> listGames() {
+        return games.values().stream()
+                .map(game -> new GameSummary(
+                        game.gameID(),
+                        game.whiteUsername(),
+                        game.blackUsername(),
+                        game.gameName()
+                ))
+                .toList();
     }
     public int createGame(String gameName){
         ChessGame chessGame = new ChessGame();

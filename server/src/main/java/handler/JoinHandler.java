@@ -11,11 +11,14 @@ public class JoinHandler {
     private final GameService gameService;
     private final Gson gson = new Gson();
 
-    public JoinHandler(GameService gameService) {this.gameService = gameService;}
+    public JoinHandler(GameService gameService) {
+        this.gameService = gameService;
+    }
+
     public void joinGame(Context ctx) {
         try {
             String authToken = ctx.header("authorization");
-            if (authToken == null || authToken.isBlank()){
+            if (authToken == null || authToken.isBlank()) {
                 ctx.status(401).json(new Server.ErrorResponse("Error: missing authToken"));
                 return;
             }
@@ -27,14 +30,15 @@ public class JoinHandler {
             String message = e.getMessage();
             if (message.contains("unauthorized")) {
                 ctx.status(401);
-            } else if (message.contains("bad request")){
+            } else if (message.contains("bad request")) {
                 ctx.status(400);
-            }else if (message.contains("already taken")){
+            } else if (message.contains("already taken")) {
                 ctx.status(403);
-            }else {
+            } else {
                 ctx.status(500);
             }
             ctx.result(gson.toJson(new Server.ErrorResponse(message)));
         }
+
     }
 }

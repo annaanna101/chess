@@ -23,34 +23,20 @@ public class GameService {
         int gameID = dataAccess.createGame(createRequest.gameName());
         return new CreateResult(gameID);
     }
-//    public void joinGame(JoinRequest joinRequest, String authToken) throws DataAccessException{
-//        if (authToken == null || joinRequest.gameID() ==  null) {
-//            throw new DataAccessException("Error: bad request");
-//        }
-//        if (dataAccess.getAuth(authToken) == null){
-//            throw new DataAccessException("Error: unauthorized");
-//        }
-//        if (dataAccess.getGame(joinRequest.gameID()) == null){
-//            throw new DataAccessException("Error: bad request");
-//        }
-//        GameD game = dataAccess.getGame(joinRequest.gameID());
-//        if (!joinRequest.playerColor().contains("BLACK") || !joinRequest.playerColor().contains("WHITE")){
-//            throw new DataAccessException("Error: bad request");
-//        }
-//        if (joinRequest.playerColor().contains("BLACK")){
-//            throw new DataAccessException("Error: bad request");
-//        }
-//        dataAccess.updateGame(
-//        /*
-//        get auth (authToken)
-//        get game(gameID)
-//        ValidatePlayer(playerColor)
-//        UpdateGame (gameID, playerColor)
-//         */
-//        String authToken;
-//        int gameID;
-//        GameD game;
-//    }
+    public void joinGame(JoinRequest joinRequest, String authToken) throws DataAccessException{
+        if (authToken == null || joinRequest.gameID() ==  null) {
+            throw new DataAccessException("Error: bad request");
+        }
+        if (dataAccess.getAuth(authToken) == null){
+            throw new DataAccessException("Error: unauthorized");
+        }
+        if (dataAccess.getGame(joinRequest.gameID()) == null){
+            throw new DataAccessException("Error: bad request");
+        }
+        AuthD auth = dataAccess.getAuth(authToken);
+        String username = auth.username();
+        dataAccess.updateGame(joinRequest.gameID(), joinRequest.playerColor(), username);
+    }
     public Collection<GameSummary> listGame(String authToken) throws DataAccessException{
         if (authToken == null){
             throw new DataAccessException("Error: bad request");

@@ -36,10 +36,10 @@ public class MemoryDataAccess implements DataAccess{
     public Collection<GameSummary> listGames() {
         return games.values().stream()
                 .map(game -> new GameSummary(
-                        game.gameID(),
-                        game.whiteUsername(),
-                        game.blackUsername(),
-                        game.gameName()
+                        game.getGameID(),
+                        game.getWhiteUsername(),
+                        game.getBlackUsername(),
+                        game.getGameName()
                 ))
                 .toList();
     }
@@ -47,7 +47,8 @@ public class MemoryDataAccess implements DataAccess{
         ChessGame chessGame = new ChessGame();
         GameD newGame = new GameD(nextGameId, null, null, gameName, chessGame);
         games.put(nextGameId, newGame);
-        return newGame.gameID();
+        nextGameId ++;
+        return newGame.getGameID();
     }
     public AuthD createAuth(String username){
         if (!users.containsKey(username)){
@@ -66,13 +67,40 @@ public class MemoryDataAccess implements DataAccess{
         return authTokens.get(token);
     }
 
-    public void clearAuths() throws DataAccessException {
+    public void clearAuths(){
         authTokens.clear();
     }
-    public void clearUsers() throws DataAccessException {
+    public void clearUsers() {
         users.clear();
     }
-    public void clearGames() throws DataAccessException {
+    public void clearGames()  {
         games.clear();
+    }
+    public void updateGame(Integer gameID, String playerColor, String username) throws DataAccessException{
+        if (gameID == null){
+            throw new DataAccessException("Error: bad request");
+        }
+        GameD game = getGame(gameID);
+        if (game == null){
+            throw new DataAccessException("Error: bad request");
+        }
+        if ("WHITE".equals(playerColor) || "BLACK".equals(playerColor)) {
+            if ("WHITE".equals(playerColor)) {
+                if (game.getWhiteUsername() != null) {
+                    throw new DataAccessException("Error: already taken");
+                } else {
+                    game.setWhiteUser(username);
+                }
+            }
+            if ("BLACK".equals(playerColor)) {
+                if (game.getBlackUsername() != null) {
+                    throw new DataAccessException("Error: already taken");
+                } else {
+                    game.setBlackUser(username);
+                }
+            }
+        } else {
+            throw new DataAccessException("Error: bad request");
+        }
     }
 }

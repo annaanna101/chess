@@ -20,7 +20,6 @@ public class RegistrationHandler {
                     gson.fromJson(ctx.body(), RegisterRequest.class);
 
             RegisterResult result = userService.register(request);
-
             ctx.status(200);
             ctx.result(gson.toJson(result));
         } catch (DataAccessException e) {

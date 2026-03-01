@@ -1,6 +1,6 @@
 package Model;
 
-public record AuthD(
+public record authD(
         String authToken,
         String username) {
 }

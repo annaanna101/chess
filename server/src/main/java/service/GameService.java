@@ -13,7 +13,7 @@ public class GameService {
         this.dataAccess = dataAccess;
     }
 
-    public CreateResult createGame(CreateRequest createRequest, String authToken) throws DataAccessException {
+    public createResult createGame(createRequest createRequest, String authToken) throws DataAccessException {
         if (authToken == null || createRequest.gameName() == null){
             throw new DataAccessException("Error: bad request");
         }
@@ -21,9 +21,9 @@ public class GameService {
             throw new DataAccessException("Error: unauthorized");
         }
         int gameID = dataAccess.createGame(createRequest.gameName());
-        return new CreateResult(gameID);
+        return new createResult(gameID);
     }
-    public void joinGame(JoinRequest joinRequest, String authToken) throws DataAccessException{
+    public void joinGame(joinRequest joinRequest, String authToken) throws DataAccessException{
         if (authToken == null || joinRequest.gameID() ==  null) {
             throw new DataAccessException("Error: bad request");
         }
@@ -33,18 +33,18 @@ public class GameService {
         if (dataAccess.getGame(joinRequest.gameID()) == null){
             throw new DataAccessException("Error: bad request");
         }
-        AuthD auth = dataAccess.getAuth(authToken);
+        authD auth = dataAccess.getAuth(authToken);
         String username = auth.username();
         dataAccess.updateGame(joinRequest.gameID(), joinRequest.playerColor(), username);
     }
-    public Collection<GameSummary> listGame(String authToken) throws DataAccessException{
+    public Collection<gameSummary> listGame(String authToken) throws DataAccessException{
         if (authToken == null){
             throw new DataAccessException("Error: bad request");
         }
         if (dataAccess.getAuth(authToken) == null){
             throw new DataAccessException("Error: unauthorized");
         }
-        Collection<GameSummary> games = dataAccess.listGames();
+        Collection<gameSummary> games = dataAccess.listGames();
         if (games == null){
             return Collections.emptyList();
         }

@@ -1,6 +1,6 @@
 package Model;
 
-public record LoginRequest(
+public record loginRequest(
         String username,
         String password
 ) {

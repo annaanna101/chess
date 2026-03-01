@@ -1,7 +1,8 @@
 package Model;
 
-public record RegisterRequest(
+public record userD(
         String username,
         String password,
         String email
-) {}
+) {
+}

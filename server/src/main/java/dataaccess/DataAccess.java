@@ -1,19 +1,19 @@
 package dataaccess;
 
-import Model.AuthD;
+import Model.authD;
 import Model.GameD;
-import Model.GameSummary;
-import Model.UserD;
+import Model.gameSummary;
+import Model.userD;
 
 import java.util.Collection;
 
 public interface DataAccess {
-    UserD addUser(UserD user) throws DataAccessException;
-    UserD getUser(String username) throws DataAccessException;
+    userD addUser(userD user) throws DataAccessException;
+    userD getUser(String username) throws DataAccessException;
     GameD getGame(int gameID) throws DataAccessException;
-    Collection<GameSummary> listGames() throws DataAccessException;
-    AuthD createAuth(String username) throws DataAccessException;
-    AuthD getAuth(String token) throws DataAccessException;
+    Collection<gameSummary> listGames() throws DataAccessException;
+    authD createAuth(String username) throws DataAccessException;
+    authD getAuth(String token) throws DataAccessException;
     void deleteAuth(String token) throws DataAccessException;
     void clearUsers() throws DataAccessException;
     void clearAuths() throws DataAccessException;

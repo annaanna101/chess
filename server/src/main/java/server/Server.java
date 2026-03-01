@@ -5,7 +5,6 @@ import dataaccess.DataAccess;
 import dataaccess.DataAccessException;
 import dataaccess.MemoryDataAccess;
 import io.javalin.*;
-import passoff.exception.ResponseParseException;
 import service.GameService;
 import service.UserService;
 
@@ -17,13 +16,14 @@ public class Server {
         DataAccess dataAccess = new MemoryDataAccess();
         UserService userService = new UserService(dataAccess);
         GameService gameService = new GameService(dataAccess);
-        RegistrationHandler registrationHandler = new RegistrationHandler(userService);
-        LoginHandler loginHandler = new LoginHandler(userService);
-        LogoutHandler logoutHandler = new LogoutHandler(userService);
-        ClearHandler clearHandler = new ClearHandler(userService, gameService);
-        CreateGameHandler createGameHandler = new CreateGameHandler(gameService);
-        ListHandler listHandler = new ListHandler(gameService);
-        JoinHandler joinHandler = new JoinHandler(gameService);
+        handlerHelper helper = new handlerHelper();
+        registrationHandler registrationHandler = new registrationHandler(userService);
+        loginHandler loginHandler = new loginHandler(userService, helper);
+        logoutHandler logoutHandler = new logoutHandler(userService);
+        clearHandler clearHandler = new clearHandler(userService, gameService);
+        createGameHandler createGameHandler = new createGameHandler(gameService, helper);
+        listHandler listHandler = new listHandler(gameService,helper);
+        joinHandler joinHandler = new joinHandler(gameService);
 
         javalin = Javalin.create(config -> config.staticFiles.add("web"));
         // Register your endpoints and exception handlers here.

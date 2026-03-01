@@ -3,7 +3,6 @@ package service;
 import Model.*;
 import dataaccess.DataAccess;
 import dataaccess.DataAccessException;
-import io.javalin.http.BadRequestResponse;
 
 public class UserService {
     private final DataAccess dataAccess;
@@ -11,29 +10,29 @@ public class UserService {
         this.dataAccess = dataAccess;
     }
 
-    public RegisterResult register(RegisterRequest registerRequest) throws DataAccessException {
+    public registerResult register(registerRequest registerRequest) throws DataAccessException {
         if (registerRequest.username() == null || registerRequest.password() == null){
             throw new DataAccessException("Error: bad request");
         }
         if (dataAccess.getUser(registerRequest.username())!= null) {
             throw new DataAccessException("Error: Username is already taken");
         }
-        UserD user = new UserD(registerRequest.username(), registerRequest.password(), registerRequest.email());
+        userD user = new userD(registerRequest.username(), registerRequest.password(), registerRequest.email());
         dataAccess.addUser(user);
-        AuthD auth = dataAccess.createAuth(registerRequest.username());
-        return new RegisterResult(registerRequest.username(), auth.authToken());
+        authD auth = dataAccess.createAuth(registerRequest.username());
+        return new registerResult(registerRequest.username(), auth.authToken());
     }
 
-    public LoginResult login(LoginRequest loginRequest) throws DataAccessException {
-        UserD user = dataAccess.getUser(loginRequest.username());
+    public loginResult login(loginRequest loginRequest) throws DataAccessException {
+        userD user = dataAccess.getUser(loginRequest.username());
         if (loginRequest.username() == null || loginRequest.password() == null){
             throw new DataAccessException("Error: bad request");
         }
         if (user == null || !user.password().equals(loginRequest.password())) {
             throw new DataAccessException("Error: unauthorized");
         }
-        AuthD auth = dataAccess.createAuth(loginRequest.username());
-        return new LoginResult(loginRequest.username(), auth.authToken());
+        authD auth = dataAccess.createAuth(loginRequest.username());
+        return new loginResult(loginRequest.username(), auth.authToken());
     }
     public void deleteAuth(String authToken) throws DataAccessException{
         if (authToken == null) {
@@ -43,7 +42,7 @@ public class UserService {
     }
     public void logout(String authToken) throws DataAccessException{
 
-        AuthD auth = dataAccess.getAuth(authToken);
+        authD auth = dataAccess.getAuth(authToken);
 
         if (auth == null) {
             throw new DataAccessException("Error: unauthorized");

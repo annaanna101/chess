@@ -1,6 +1,6 @@
 package Model;
 
-public record GameSummary(
+public record gameSummary(
         int gameID,
         String whiteUsername,
         String blackUsername,

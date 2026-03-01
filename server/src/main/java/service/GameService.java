@@ -1,6 +1,6 @@
 package service;
 
-import Model.*;
+import model.*;
 import dataaccess.DataAccess;
 import dataaccess.DataAccessException;
 
@@ -13,7 +13,7 @@ public class GameService {
         this.dataAccess = dataAccess;
     }
 
-    public createResult createGame(createRequest createRequest, String authToken) throws DataAccessException {
+    public CreateResult createGame(CreateRequest createRequest, String authToken) throws DataAccessException {
         if (authToken == null || createRequest.gameName() == null){
             throw new DataAccessException("Error: bad request");
         }
@@ -21,9 +21,9 @@ public class GameService {
             throw new DataAccessException("Error: unauthorized");
         }
         int gameID = dataAccess.createGame(createRequest.gameName());
-        return new createResult(gameID);
+        return new CreateResult(gameID);
     }
-    public void joinGame(joinRequest joinRequest, String authToken) throws DataAccessException{
+    public void joinGame(JoinRequest joinRequest, String authToken) throws DataAccessException{
         if (authToken == null || joinRequest.gameID() ==  null) {
             throw new DataAccessException("Error: bad request");
         }
@@ -33,18 +33,18 @@ public class GameService {
         if (dataAccess.getGame(joinRequest.gameID()) == null){
             throw new DataAccessException("Error: bad request");
         }
-        authD auth = dataAccess.getAuth(authToken);
+        AuthD auth = dataAccess.getAuth(authToken);
         String username = auth.username();
         dataAccess.updateGame(joinRequest.gameID(), joinRequest.playerColor(), username);
     }
-    public Collection<gameSummary> listGame(String authToken) throws DataAccessException{
+    public Collection<GameSummary> listGame(String authToken) throws DataAccessException{
         if (authToken == null){
             throw new DataAccessException("Error: bad request");
         }
         if (dataAccess.getAuth(authToken) == null){
             throw new DataAccessException("Error: unauthorized");
         }
-        Collection<gameSummary> games = dataAccess.listGames();
+        Collection<GameSummary> games = dataAccess.listGames();
         if (games == null){
             return Collections.emptyList();
         }

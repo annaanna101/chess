@@ -1,6 +1,6 @@
-package Model;
+package model;
 
-public record joinRequest(
+public record JoinRequest(
         Integer gameID,
         String playerColor
 ){

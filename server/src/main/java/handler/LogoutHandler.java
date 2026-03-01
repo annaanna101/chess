@@ -1,4 +1,4 @@
-package Handler;
+package handler;
 
 import com.google.gson.Gson;
 import dataaccess.DataAccessException;
@@ -6,11 +6,11 @@ import io.javalin.http.Context;
 import server.Server;
 import service.UserService;
 
-public class logoutHandler {
+public class LogoutHandler {
     private final UserService userService;
     private final Gson gson = new Gson();
 
-    public logoutHandler(UserService userService) {this.userService = userService;}
+    public LogoutHandler(UserService userService) {this.userService = userService;}
     public void logout(Context ctx){
         try {
             String authToken = ctx.header("authorization");

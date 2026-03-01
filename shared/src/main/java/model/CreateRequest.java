@@ -1,6 +1,6 @@
-package Model;
+package model;
 
-public record createRequest(
+public record CreateRequest(
         String gameName,
         String authToken
 ) {

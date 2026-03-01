@@ -1,25 +1,25 @@
-package Handler;
-import Model.registerRequest;
-import Model.registerResult;
+package handler;
+import model.RegisterRequest;
+import model.RegisterResult;
 import com.google.gson.Gson;
 import dataaccess.DataAccessException;
 import io.javalin.http.Context;
 import server.Server;
 import service.UserService;
 
-public class registrationHandler {
+public class RegistrationHandler {
     private final UserService userService;
     private final Gson gson = new Gson();
 
-    public registrationHandler(UserService userService){
+    public RegistrationHandler(UserService userService){
         this.userService = userService;
     }
     public void register(Context ctx) throws DataAccessException {
         try {
-            registerRequest request =
-                    gson.fromJson(ctx.body(), registerRequest.class);
+            RegisterRequest request =
+                    gson.fromJson(ctx.body(), RegisterRequest.class);
 
-            registerResult result = userService.register(request);
+            RegisterResult result = userService.register(request);
 
             ctx.status(200);
             ctx.result(gson.toJson(result));

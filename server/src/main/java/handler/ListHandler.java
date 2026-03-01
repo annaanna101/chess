@@ -1,6 +1,6 @@
-package Handler;
+package handler;
 
-import Model.*;
+import model.*;
 import com.google.gson.Gson;
 import dataaccess.DataAccessException;
 import io.javalin.http.Context;
@@ -9,13 +9,13 @@ import service.GameService;
 
 import java.util.Collection;
 
-public class listHandler {
+public class ListHandler {
     private final GameService gameService;
     private final Gson gson = new Gson();
-    private final handlerHelper helper;
+    private final HandlerHelper helper;
 
 
-    public listHandler(GameService gameService, handlerHelper handlerError) {this.gameService = gameService;
+    public ListHandler(GameService gameService, HandlerHelper handlerError) {this.gameService = gameService;
         this.helper = handlerError;
     }
     public void listGames(Context ctx) {
@@ -25,8 +25,8 @@ public class listHandler {
                 ctx.status(401).json(new Server.ErrorResponse("Error: missing authToken"));
                 return;
             }
-            Collection<gameSummary> result = gameService.listGame(authToken);
-            listGameResult response = new listGameResult(result);
+            Collection<GameSummary> result = gameService.listGame(authToken);
+            ListGameResult response = new ListGameResult(result);
             ctx.status(200);
             ctx.result(gson.toJson(response));
         } catch (DataAccessException e) {

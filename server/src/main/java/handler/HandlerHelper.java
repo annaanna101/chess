@@ -1,11 +1,11 @@
-package Handler;
+package handler;
 
 import com.google.gson.Gson;
 import dataaccess.DataAccessException;
 import io.javalin.http.Context;
 import server.Server;
 
-public class handlerHelper {
+public class HandlerHelper {
 
     void handlerErrorResponse(Context ctx, DataAccessException e){
         final Gson gson = new Gson();

@@ -1,9 +1,9 @@
 package dataaccess;
 
-import Model.authD;
-import Model.GameD;
-import Model.gameSummary;
-import Model.userD;
+import model.AuthD;
+import model.GameD;
+import model.GameSummary;
+import model.UserD;
 import chess.ChessGame;
 
 import java.util.Collection;
@@ -12,11 +12,11 @@ import java.util.UUID;
 
 public class MemoryDataAccess implements DataAccess{
     private int nextGameId = 1;
-    final private HashMap<String, userD> users = new HashMap<>();
+    final private HashMap<String, UserD> users = new HashMap<>();
     final private HashMap<Integer, GameD> games = new HashMap<>();
-    final private HashMap<String, authD> authTokens = new HashMap<>();
+    final private HashMap<String, AuthD> authTokens = new HashMap<>();
 
-    public userD addUser(userD user){
+    public UserD addUser(UserD user){
         if (users.containsKey(user.username())){
             throw new RuntimeException("Username is already in use");
         }
@@ -25,7 +25,7 @@ public class MemoryDataAccess implements DataAccess{
         return user;
     }
 
-    public userD getUser(String username){
+    public UserD getUser(String username){
         return users.get(username);
     }
 
@@ -33,9 +33,9 @@ public class MemoryDataAccess implements DataAccess{
         return games.get(gameID);
     }
 
-    public Collection<gameSummary> listGames() {
+    public Collection<GameSummary> listGames() {
         return games.values().stream()
-                .map(game -> new gameSummary(
+                .map(game -> new GameSummary(
                         game.getGameID(),
                         game.getWhiteUsername(),
                         game.getBlackUsername(),
@@ -50,12 +50,12 @@ public class MemoryDataAccess implements DataAccess{
         nextGameId ++;
         return newGame.getGameID();
     }
-    public authD createAuth(String username){
+    public AuthD createAuth(String username){
         if (!users.containsKey(username)){
             throw new RuntimeException("User does not exist!");
         }
         String token = UUID.randomUUID().toString();
-        authD auth = new authD(token, username);
+        AuthD auth = new AuthD(token, username);
         authTokens.put(token, auth);
         return auth;
     }
@@ -63,7 +63,7 @@ public class MemoryDataAccess implements DataAccess{
         authTokens.remove(token);
     }
 
-    public authD getAuth(String token){
+    public AuthD getAuth(String token){
         return authTokens.get(token);
     }
 

@@ -1,10 +1,10 @@
+package service;
+
 import chess.ChessGame;
 import dataaccess.DataAccess;
 import dataaccess.DataAccessException;
 import model.*;
 import org.junit.jupiter.api.*;
-import service.GameService;
-import service.UserService;
 
 import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;

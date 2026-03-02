@@ -6,13 +6,12 @@ import org.junit.jupiter.api.*;
 import service.GameService;
 import service.UserService;
 
-import javax.xml.crypto.Data;
 import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class serviceTest {
+public class ServiceTest {
     private GameService gameService;
     private UserService userService;
     private DataAccess dataAccess;
@@ -26,23 +25,23 @@ public class serviceTest {
             Map<String, UserD> users = new HashMap<>();
             int nextGameID = 1;
             @Override
-            public UserD addUser(UserD user) throws DataAccessException {
+            public UserD addUser(UserD user)  {
                 users.put(user.username(), user);
                 return user;
             }
 
             @Override
-            public UserD getUser(String username) throws DataAccessException {
+            public UserD getUser(String username) {
                 return users.get(username);
             }
 
             @Override
-            public GameD getGame(int gameID) throws DataAccessException {
+            public GameD getGame(int gameID){
                 return games.get(gameID);
             }
 
             @Override
-            public Collection<GameSummary> listGames() throws DataAccessException {
+            public Collection<GameSummary> listGames() {
                 return games.values().stream()
                         .map(g -> new GameSummary(
                                 g.getGameID(),
@@ -53,46 +52,46 @@ public class serviceTest {
             }
 
             @Override
-            public AuthD createAuth(String username) throws DataAccessException {
+            public AuthD createAuth(String username) {
                 AuthD auth = new AuthD(AUTH, username);
                 auths.put(AUTH, auth);
                 return auth;
             }
 
             @Override
-            public AuthD getAuth(String token) throws DataAccessException {
+            public AuthD getAuth(String token) {
                 return auths.get(token);
             }
 
             @Override
-            public void deleteAuth(String token) throws DataAccessException {
+            public void deleteAuth(String token) {
                 auths.remove(token);
             }
 
             @Override
-            public void clearUsers() throws DataAccessException {
+            public void clearUsers() {
                 users.clear();
             }
 
             @Override
-            public void clearAuths() throws DataAccessException {
+            public void clearAuths() {
                 auths.clear();
             }
 
             @Override
-            public void clearGames() throws DataAccessException {
+            public void clearGames()  {
                 games.clear();
             }
 
             @Override
-            public int createGame(String gameName) throws DataAccessException {
+            public int createGame(String gameName) {
                 int id = nextGameID++;
                 games.put(id, new GameD(id, null, null, gameName, new ChessGame()));
                 return id;
             }
 
             @Override
-            public void updateGame(Integer gameID, String playerColor, String username) throws DataAccessException {
+            public void updateGame(Integer gameID, String playerColor, String username) {
                 GameD game = games.get(gameID);
                 if (playerColor.equals("WHITE")){
                     game.setWhiteUser(username);
@@ -106,11 +105,9 @@ public class serviceTest {
         dataAccess.createAuth("player1");
     }
     @Test
-    void testCreateGameNull() throws DataAccessException{
+    void testCreateGameNull(){
         CreateRequest request = new CreateRequest(null, AUTH);
-        Exception ex = assertThrows(DataAccessException.class, () ->{
-            gameService.createGame(request, AUTH);
-        });
+        Exception ex = assertThrows(DataAccessException.class, () -> gameService.createGame(request, AUTH));
         assertTrue(ex.getMessage().contains("bad request"));
     }
 
@@ -134,9 +131,7 @@ public class serviceTest {
     void testListGamesListNull() throws DataAccessException {
         gameService.createGame(new CreateRequest("Game1", AUTH), AUTH);
         gameService.createGame(new CreateRequest("Game2", AUTH), AUTH);
-        Exception ex = assertThrows(DataAccessException.class, () -> {
-            gameService.listGame(null);
-        });
+        Exception ex = assertThrows(DataAccessException.class, () -> gameService.listGame(null));
         assertTrue(ex.getMessage().contains("bad request"));
     }
 
@@ -148,8 +143,6 @@ public class serviceTest {
         Collection<GameSummary> games = gameService.listGame(AUTH);
         assertEquals(0, games.size());
     }
-
-    // implement clear negative test?
 
     @Test
     void testJoinGamePositive() throws DataAccessException{
@@ -177,9 +170,7 @@ public class serviceTest {
 
     @Test
     void testRegisterUsernameNull(){
-        Exception ex = assertThrows(DataAccessException.class, () -> {
-            userService.register(new RegisterRequest(null, "p", "e"));
-        });
+        Exception ex = assertThrows(DataAccessException.class, () -> userService.register(new RegisterRequest(null, "p", "e")));
         assertTrue(ex.getMessage().contains("bad request"));
     }
 
@@ -205,18 +196,64 @@ public class serviceTest {
     }
 
     @Test
-    void testLogoutUnauthorized() {
-        Exception ex = assertThrows(DataAccessException.class, () -> {
-            userService.logout("falseAuth");
-        });
+    void testDeleteAuth() throws DataAccessException {
+        userService.deleteAuth(AUTH);
+        assertNull(dataAccess.getAuth(AUTH));
+    }
+
+    @Test
+    void testDeleteAuthUnauthorized() {
+        Exception ex = assertThrows(DataAccessException.class, () -> userService.deleteAuth(null));
         assertTrue(ex.getMessage().contains("unauthorized"));
     }
 
     @Test
-    void testClearAll() throws DataAccessException{
-        dataAccess.createAuth("user1");
-        dataAccess.createAuth("user2");
+    void testLogoutUnauthorized() {
+        Exception ex = assertThrows(DataAccessException.class, () -> userService.logout("falseAuth"));
+        assertTrue(ex.getMessage().contains("unauthorized"));
+    }
+    @Test
+    void testClearAuths() throws DataAccessException{
+        dataAccess.addUser(new UserD("user1", "p1", "e1"));
+        dataAccess.addUser(new UserD("user2", "p2", "e2"));
+        AuthD auth1 = dataAccess.createAuth("user1");
+        AuthD auth2 = dataAccess.createAuth("user2");
         dataAccess.clearAuths();
-        assertTrue(dataAccess.getAuth());
+        assertNull(dataAccess.getAuth(auth1.authToken()));
+        assertNull(dataAccess.getAuth(auth2.authToken()));
+    }
+
+    @Test
+    void testClearUsers() throws DataAccessException{
+        dataAccess.addUser(new UserD("user1", "pa1", "email1"));
+        dataAccess.addUser(new UserD("user2", "pa2", "email2"));
+        dataAccess.clearUsers();
+        assertNull(dataAccess.getUser("user1"));
+        assertNull(dataAccess.getUser("user2"));
+    }
+
+    @Test
+    void testClearAll() throws DataAccessException{
+        dataAccess.addUser(new UserD("user1", "pass1", "email1"));
+        dataAccess.addUser(new UserD("user2", "pass2", "email2"));
+        AuthD auth1 = dataAccess.createAuth("user1");
+        AuthD auth2 = dataAccess.createAuth("user2");
+
+        int game1 = dataAccess.createGame("Game1");
+        int game2 = dataAccess.createGame("Game2");
+
+        dataAccess.clearUsers();
+        dataAccess.clearAuths();
+        dataAccess.clearGames();
+
+        assertNull(dataAccess.getUser("user1"));
+        assertNull(dataAccess.getUser("user2"));
+
+        assertNull(dataAccess.getAuth(auth1.authToken()));
+        assertNull(dataAccess.getAuth(auth2.authToken()));
+
+        assertNull(dataAccess.getGame(game1));
+        assertNull(dataAccess.getGame(game2));
+        assertEquals(0, dataAccess.listGames().size());
     }
 }

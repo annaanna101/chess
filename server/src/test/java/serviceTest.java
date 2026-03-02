@@ -23,15 +23,17 @@ public class serviceTest {
         dataAccess = new DataAccess() {
             Map<Integer, GameD> games = new HashMap<>();
             Map<String, AuthD> auths = new HashMap<>();
+            Map<String, UserD> users = new HashMap<>();
             int nextGameID = 1;
             @Override
             public UserD addUser(UserD user) throws DataAccessException {
+                users.put(user.username(), user);
                 return user;
             }
 
             @Override
             public UserD getUser(String username) throws DataAccessException {
-                return null;
+                return users.get(username);
             }
 
             @Override
@@ -64,17 +66,17 @@ public class serviceTest {
 
             @Override
             public void deleteAuth(String token) throws DataAccessException {
-
+                auths.remove(token);
             }
 
             @Override
             public void clearUsers() throws DataAccessException {
-
+                users.clear();
             }
 
             @Override
             public void clearAuths() throws DataAccessException {
-
+                auths.clear();
             }
 
             @Override
@@ -166,5 +168,55 @@ public class serviceTest {
             gameService.joinGame(joinRequest, AUTH);
         });
         assertTrue(ex.getMessage().contains("bad request"));
+    }
+    @Test
+    void testRegister() throws DataAccessException {
+        userService.register(new RegisterRequest("username", "password", "email"));
+        assertNotNull(dataAccess.getUser("username"));
+    }
+
+    @Test
+    void testRegisterUsernameNull(){
+        Exception ex = assertThrows(DataAccessException.class, () -> {
+            userService.register(new RegisterRequest(null, "p", "e"));
+        });
+        assertTrue(ex.getMessage().contains("bad request"));
+    }
+
+    @Test
+    void testLogin() throws DataAccessException{
+        userService.register(new RegisterRequest("username", "password", "email"));
+        assertNotNull(userService.login(new LoginRequest("username", "password")));
+    }
+
+    @Test
+    void testLoginUnauthorized(){
+        Exception ex = assertThrows(DataAccessException.class, () -> {
+            userService.register(new RegisterRequest("username", "password", "email"));
+            userService.login(new LoginRequest("user", "password"));
+        });
+        assertTrue(ex.getMessage().contains("unauthorized"));
+    }
+
+    @Test
+    void testLogout() throws DataAccessException {
+        userService.logout(AUTH);
+        assertNull(dataAccess.getAuth(AUTH));
+    }
+
+    @Test
+    void testLogoutUnauthorized() {
+        Exception ex = assertThrows(DataAccessException.class, () -> {
+            userService.logout("falseAuth");
+        });
+        assertTrue(ex.getMessage().contains("unauthorized"));
+    }
+
+    @Test
+    void testClearAll() throws DataAccessException{
+        dataAccess.createAuth("user1");
+        dataAccess.createAuth("user2");
+        dataAccess.clearAuths();
+        assertTrue(dataAccess.getAuth());
     }
 }

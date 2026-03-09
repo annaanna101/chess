@@ -21,27 +21,28 @@ import static java.sql.Statement.RETURN_GENERATED_KEYS;
 import static java.sql.Types.NULL;
 
 public class MySqlDataAccess implements DataAccess{
-    private int nextGameId = 1;
+
     public MySqlDataAccess() throws DataAccessException {
         configureDatabase();
     }
 
     public UserD addUser(UserD user) throws DataAccessException {
         var statement = "INSERT INTO user (username, password, email) VALUES (?, ?, ?)";
-        String json = new Gson().toJson(user);
-        executeUpdate(statement, user.username(), user.password(), user.email(), json);
+        executeUpdate(statement, user.username(), user.password(), user.email());
         return new UserD(user.username(), user.password(), user.email());
     }
 
     public UserD getUser(String username) throws DataAccessException {
         try (Connection conn = DatabaseManager.getConnection()) {
-            var statement = "SELECT username, json FROM user WHERE username=?";
+            var statement = "SELECT username, password, email FROM user WHERE username=?";
             try (PreparedStatement ps = conn.prepareStatement(statement)){
                 ps.setString(1, username);
                 try (ResultSet rs = ps.executeQuery()){
                     if (rs.next()){
-                        String json = rs.getString("json");
-                        return new Gson().fromJson(json, UserD.class);
+                        String uname = rs.getString("username");
+                        String pword = rs.getString("password");
+                        String em = rs.getString("email");
+                        return new UserD(uname, pword, em);
                     }
                 }
             }
@@ -53,12 +54,12 @@ public class MySqlDataAccess implements DataAccess{
 
     public GameD getGame(int gameID) throws DataAccessException {
         try (Connection conn = DatabaseManager.getConnection()) {
-            var statement = "SELECT gameID, json FROM game WHERE gameID=?";
+            var statement = "SELECT gameID, game FROM game WHERE gameID=?";
             try (PreparedStatement ps = conn.prepareStatement(statement)){
                 ps.setInt(1, gameID);
                 try (ResultSet rs = ps.executeQuery()){
                     if (rs.next()){
-                        String json = rs.getString("json");
+                        String json = rs.getString("game");
                         return new Gson().fromJson(json, GameD.class);
                     }
                 }
@@ -72,11 +73,11 @@ public class MySqlDataAccess implements DataAccess{
     public Collection<GameSummary> listGames() throws DataAccessException {
         var result = new ArrayList<GameSummary>();
         try (Connection conn = DatabaseManager.getConnection()) {
-            var statement = "SELECT gameID, json FROM game";
+            var statement = "SELECT gameID, game FROM game";
             try (PreparedStatement ps = conn.prepareStatement(statement)){
                 try (ResultSet rs = ps.executeQuery()){
                     while (rs.next()){
-                        String json = rs.getString("json");
+                        String json = rs.getString("game");
                         result.add(new Gson().fromJson(json, GameSummary.class));
                     }
                 }
@@ -91,20 +92,20 @@ public class MySqlDataAccess implements DataAccess{
         var statement = "INSERT INTO auth (authToken, username) VALUES (?, ?)";
         String token = UUID.randomUUID().toString();
         AuthD auth = new AuthD(token, username);
-        String json = new Gson().toJson(auth);
-        executeUpdate(statement, auth.authToken(), auth.username(), json);
+        executeUpdate(statement, auth.authToken(), auth.username());
         return auth;
     }
 
     public AuthD getAuth(String token) throws DataAccessException {
         try (Connection conn = DatabaseManager.getConnection()) {
-            var statement = "SELECT authToken, json FROM auth WHERE authToken=?";
+            var statement = "SELECT authToken, authToken FROM auth WHERE authToken=?";
             try (PreparedStatement ps = conn.prepareStatement(statement)){
                 ps.setString(1, token);
                 try (ResultSet rs = ps.executeQuery()){
                     if (rs.next()){
-                        String json = rs.getString("json");
-                        return new Gson().fromJson(json, AuthD.class);
+                        String authTok = rs.getString("authToken");
+                        String uname = rs.getString("username");
+                        return new AuthD(authTok,uname);
                     }
                 }
             }
@@ -135,20 +136,35 @@ public class MySqlDataAccess implements DataAccess{
     }
 
     public int createGame(String gameName) throws DataAccessException {
-        var statement = "INSERT INTO game (gameID, whiteUsername, blackUsername, json) VALUES (?, ?, ?, ?)";
+        var statement = "INSERT INTO game (whiteUsername, blackUsername, gameName, game) VALUES (?, ?, ?, ?)";
         ChessGame chessGame = new ChessGame();
-        GameD newGame = new GameD(nextGameId, null, null, gameName, chessGame);
+        GameD newGame = new GameD(0,null, null, gameName, chessGame);
         String json = new Gson().toJson(newGame);
-        executeUpdate(
-                statement, newGame.getGameID(), newGame.getWhiteUsername(),
+        return executeUpdate(
+                statement, newGame.getWhiteUsername(),
                 newGame.getBlackUsername(), newGame.getGameName(), json
         );
-        nextGameId ++;
-        return newGame.getGameID();
     }
 
     public void updateGame(Integer gameID, String playerColor, String username) throws DataAccessException {
-
+        GameD game = getGame(gameID);
+        if (game == null) {
+            throw new DataAccessException("Game not found");
+        }
+        if (playerColor.contains("WHITE")){
+            var statement = "UPDATE game SET whiteUsername=?, game=? WHERE gameID=?";
+            ChessGame gameBoard = game.getGame();
+            GameD updatedGame = new GameD(gameID, username, game.getBlackUsername(), game.getGameName(), gameBoard);
+            String json = new Gson().toJson(updatedGame);
+            executeUpdate(statement, username, json, gameID);
+        } else if (playerColor.contains("BLACK")){
+            var statement = "UPDATE game SET blackUsername=?, game=? WHERE gameID=?";
+            ChessGame gameBoard = game.getGame();
+            GameD updatedGame = new GameD(gameID, game.getWhiteUsername(), username, game.getGameName(), gameBoard);
+            String json = new Gson().toJson(updatedGame);
+            executeUpdate(statement, username, json, gameID);
+            executeUpdate(statement, username, gameID);
+        }
     }
 
     private int executeUpdate(String statement, Object... params) throws DataAccessException{
@@ -158,7 +174,6 @@ public class MySqlDataAccess implements DataAccess{
                     Object param = params[i];
                     if (param instanceof String p) ps.setString(i + 1, p);
                     else if (param instanceof Integer p) ps.setInt(i + 1, p);
-                    else if (param instanceof PetType p) ps.setString(i + 1, p.toString());
                     else if (param == null) ps.setNull(i + 1, NULL);
                 }
                 ps.executeUpdate();
@@ -182,7 +197,7 @@ public class MySqlDataAccess implements DataAccess{
               `password` varchar(256) NOT NULL,
               `email` varchar(256) NOT NULL UNIQUE,
               PRIMARY KEY (`username`),
-              UNIQUE INDEX(email),
+              UNIQUE INDEX(email)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
             """,
             """
@@ -192,22 +207,22 @@ public class MySqlDataAccess implements DataAccess{
               PRIMARY KEY (`authToken`),
               INDEX(username),
               CONSTRAINT fk_auth_user
-                FOREIGN KEY ('username')
-                REFERENCES user('username')
+                FOREIGN KEY (`username`)
+                REFERENCES user(`username`)
                 ON DELETE CASCADE
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
             """,
             """
             CREATE TABLE IF NOT EXISTS  game (
               `gameID` int NOT NULL AUTO_INCREMENT,
-              `whiteUsername` varchar(256) NOT NULL,
-              `blackUsername` varchar(256) NOT NULL,
+              `whiteUsername` varchar(256),
+              `blackUsername` varchar(256),
               `gameName` varchar(256) NOT NULL UNIQUE,
               `game` JSON NOT NULL,
               PRIMARY KEY (`gameID`),
               INDEX(whiteUsername),
               INDEX(blackUsername),
-              UNIQUE INDEX(gameName)
+              UNIQUE INDEX(gameName),
               CONSTRAINT fk_game_white_user
                 FOREIGN KEY (`whiteUsername`)
                 REFERENCES user(`username`)

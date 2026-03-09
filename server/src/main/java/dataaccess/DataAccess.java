@@ -20,4 +20,6 @@ public interface DataAccess {
     void clearGames() throws DataAccessException;
     int createGame(String gameName) throws DataAccessException;
     void updateGame(Integer gameID, String playerColor, String username) throws DataAccessException;
+//    void storeUserPassword(String username, String clearTextPassword) throws DataAccessException;
+    boolean verifyUser(String username, String providedClearTextPassword) throws DataAccessException;
 }

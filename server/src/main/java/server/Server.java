@@ -1,5 +1,6 @@
 package server;
 
+import dataaccess.MySqlDataAccess;
 import handler.*;
 import dataaccess.DataAccess;
 import dataaccess.DataAccessException;
@@ -13,7 +14,13 @@ public class Server {
     private final Javalin javalin;
 
     public Server() {
-        DataAccess dataAccess = new MemoryDataAccess();
+//        DataAccess dataAccess = new MemoryDataAccess();
+        DataAccess dataAccess = null;
+        try {
+            dataAccess = new MySqlDataAccess();
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
         UserService userService = new UserService(dataAccess);
         GameService gameService = new GameService(dataAccess);
         HandlerHelper helper = new HandlerHelper();

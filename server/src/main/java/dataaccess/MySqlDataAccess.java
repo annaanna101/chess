@@ -30,6 +30,7 @@ public class MySqlDataAccess implements DataAccess{
     public UserD addUser(UserD user) throws DataAccessException {
         var statement = "INSERT INTO user (username, password, email) VALUES (?, ?, ?)";
         executeUpdate(statement, user.username(), user.password(), user.email());
+        storeUserPassword(user.username(), user.password());
         return new UserD(user.username(), user.password(), user.email());
     }
 
@@ -152,6 +153,13 @@ public class MySqlDataAccess implements DataAccess{
         if (game == null) {
             throw new DataAccessException("Game not found");
         }
+        /*
+        * Select the game’s state (JSON string) from the database
+        * Deserialize the JSON string to a ChessGame Java object
+        * Update the state of the ChessGame object
+        * Re-serialize the Chess game to a JSON string
+        * Update the game’s JSON string in the database
+        **/
         if (playerColor.contains("WHITE")){
             var statement = "UPDATE game SET whiteUsername=?, game=? WHERE gameID=?";
             ChessGame gameBoard = game.getGame();
@@ -192,7 +200,7 @@ public class MySqlDataAccess implements DataAccess{
         String hashedPassword = BCrypt.hashpw(clearTextPassword, BCrypt.gensalt());
         writeHashedPasswordToDatabase(username, hashedPassword);
     }
-    boolean verifyUser(String username, String providedClearTextPassword) throws DataAccessException {
+    public boolean verifyUser(String username, String providedClearTextPassword) throws DataAccessException {
         var hashedPassword = readHashedPasswordFromDatabase(username);
         return BCrypt.checkpw(providedClearTextPassword, hashedPassword);
     }

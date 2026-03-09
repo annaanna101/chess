@@ -24,11 +24,11 @@ public class UserService {
     }
 
     public LoginResult login(LoginRequest loginRequest) throws DataAccessException {
-        UserD user = dataAccess.getUser(loginRequest.username());
+//        UserD user = dataAccess.getUser(loginRequest.username());
         if (loginRequest.username() == null || loginRequest.password() == null){
             throw new DataAccessException("Error: bad request");
         }
-        if (user == null || !user.password().equals(loginRequest.password())) {
+        if (!dataAccess.verifyUser(loginRequest.username(), loginRequest.password())) {
             throw new DataAccessException("Error: unauthorized");
         }
         AuthD auth = dataAccess.createAuth(loginRequest.username());

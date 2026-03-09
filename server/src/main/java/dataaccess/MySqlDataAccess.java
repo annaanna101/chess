@@ -7,6 +7,7 @@ import model.GameD;
 import model.GameSummary;
 import model.UserD;
 import org.eclipse.jetty.server.Authentication;
+import org.mindrot.jbcrypt.BCrypt;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -14,8 +15,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.UUID;
+import java.sql.*;
 
 import static java.sql.Statement.RETURN_GENERATED_KEYS;
 import static java.sql.Types.NULL;
@@ -163,8 +164,37 @@ public class MySqlDataAccess implements DataAccess{
             GameD updatedGame = new GameD(gameID, game.getWhiteUsername(), username, game.getGameName(), gameBoard);
             String json = new Gson().toJson(updatedGame);
             executeUpdate(statement, username, json, gameID);
-            executeUpdate(statement, username, gameID);
         }
+    }
+    void writeHashedPasswordToDatabase(String username, String hashedPassword) throws DataAccessException {
+        var statement = "UPDATE user SET password=? WHERE username=?";
+        executeUpdate(statement, hashedPassword, username);
+    }
+
+    String readHashedPasswordFromDatabase(String username) throws DataAccessException {
+        try (Connection conn = DatabaseManager.getConnection()) {
+            var statement = "SELECT password FROM user WHERE username=?";
+            try (PreparedStatement ps = conn.prepareStatement(statement)){
+                ps.setString(1, username);
+                try (ResultSet rs = ps.executeQuery()){
+                    if (rs.next()){
+                        return rs.getString("password");
+                    }
+                }
+            }
+        } catch (Exception e){
+            throw new DataAccessException(String.format("Unable to read data: %s", e.getMessage()));
+        }
+        return null;
+    }
+
+    void storeUserPassword(String username, String clearTextPassword) throws DataAccessException {
+        String hashedPassword = BCrypt.hashpw(clearTextPassword, BCrypt.gensalt());
+        writeHashedPasswordToDatabase(username, hashedPassword);
+    }
+    boolean verifyUser(String username, String providedClearTextPassword) throws DataAccessException {
+        var hashedPassword = readHashedPasswordFromDatabase(username);
+        return BCrypt.checkpw(providedClearTextPassword, hashedPassword);
     }
 
     private int executeUpdate(String statement, Object... params) throws DataAccessException{

@@ -6,7 +6,6 @@ import model.AuthD;
 import model.GameD;
 import model.GameSummary;
 import model.UserD;
-import org.eclipse.jetty.server.Authentication;
 import org.mindrot.jbcrypt.BCrypt;
 
 import java.sql.Connection;
@@ -62,8 +61,7 @@ public class MySqlDataAccess implements DataAccess{
                 try (ResultSet rs = ps.executeQuery()){
                     if (rs.next()){
                         String json = rs.getString("game");
-                        GameD game = new Gson().fromJson(json, GameD.class);
-                        return game;
+                        return new Gson().fromJson(json, GameD.class);
                     }
                 }
             }
@@ -130,17 +128,17 @@ public class MySqlDataAccess implements DataAccess{
     }
 
     public void clearUsers() throws DataAccessException {
-        var statement = "TRUNCATE TABLE user";
+        var statement = "TRUNCATE TABLE `user`";
         executeUpdate(statement);
     }
 
     public void clearAuths() throws DataAccessException {
-        var statement = "TRUNCATE TABLE auth";
+        var statement = "TRUNCATE TABLE `auth`";
         executeUpdate(statement);
     }
 
     public void clearGames() throws DataAccessException {
-        var statement = "TRUNCATE TABLE game";
+        var statement = "TRUNCATE TABLE `game`";
         executeUpdate(statement);
     }
 

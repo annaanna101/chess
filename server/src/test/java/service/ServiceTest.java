@@ -101,7 +101,7 @@ public class ServiceTest {
             }
 
             @Override
-            public boolean verifyUser(String username, String providedClearTextPassword) throws DataAccessException {
+            public boolean verifyUser(String username, String providedClearTextPassword) {
                 return getUser(username).password().equals(providedClearTextPassword);
             }
         };

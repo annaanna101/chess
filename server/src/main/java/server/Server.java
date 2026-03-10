@@ -4,7 +4,6 @@ import dataaccess.MySqlDataAccess;
 import handler.*;
 import dataaccess.DataAccess;
 import dataaccess.DataAccessException;
-import dataaccess.MemoryDataAccess;
 import io.javalin.*;
 import service.GameService;
 import service.UserService;

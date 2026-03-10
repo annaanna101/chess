@@ -99,6 +99,11 @@ public class ServiceTest {
                     game.setBlackUser(username);
                 }
             }
+
+            @Override
+            public boolean verifyUser(String username, String providedClearTextPassword) throws DataAccessException {
+                return getUser(username).password().equals(providedClearTextPassword);
+            }
         };
         gameService = new GameService(dataAccess);
         userService = new UserService(dataAccess);

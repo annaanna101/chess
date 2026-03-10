@@ -103,4 +103,12 @@ public class MemoryDataAccess implements DataAccess{
             throw new DataAccessException("Error: bad request");
         }
     }
+
+    @Override
+    public boolean verifyUser(String username, String password) throws DataAccessException {
+        if (!getUser(username).password().equals(password)){
+            throw new DataAccessException("Error: unauthorized");
+        }
+        return false;
+    }
 }

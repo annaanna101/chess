@@ -62,7 +62,8 @@ public class MySqlDataAccess implements DataAccess{
                 try (ResultSet rs = ps.executeQuery()){
                     if (rs.next()){
                         String json = rs.getString("game");
-                        return new Gson().fromJson(json, GameD.class);
+                        GameD game = new Gson().fromJson(json, GameD.class);
+                        return game;
                     }
                 }
             }
@@ -80,7 +81,13 @@ public class MySqlDataAccess implements DataAccess{
                 try (ResultSet rs = ps.executeQuery()){
                     while (rs.next()){
                         String json = rs.getString("game");
-                        result.add(new Gson().fromJson(json, GameSummary.class));
+                        GameD game = new Gson().fromJson(json, GameD.class);
+                        result.add(new GameSummary(
+                                game.getGameID(),
+                                game.getWhiteUsername(),
+                                game.getBlackUsername(),
+                                game.getGameName()
+                        ));
                     }
                 }
             }
@@ -100,7 +107,7 @@ public class MySqlDataAccess implements DataAccess{
 
     public AuthD getAuth(String token) throws DataAccessException {
         try (Connection conn = DatabaseManager.getConnection()) {
-            var statement = "SELECT authToken, authToken FROM auth WHERE authToken=?";
+            var statement = "SELECT authToken, username FROM auth WHERE authToken=?";
             try (PreparedStatement ps = conn.prepareStatement(statement)){
                 ps.setString(1, token);
                 try (ResultSet rs = ps.executeQuery()){
@@ -123,28 +130,28 @@ public class MySqlDataAccess implements DataAccess{
     }
 
     public void clearUsers() throws DataAccessException {
-        var statement = "TRUNCATE user";
+        var statement = "TRUNCATE TABLE user";
         executeUpdate(statement);
     }
 
     public void clearAuths() throws DataAccessException {
-        var statement = "TRUNCATE auth";
+        var statement = "TRUNCATE TABLE auth";
         executeUpdate(statement);
     }
 
     public void clearGames() throws DataAccessException {
-        var statement = "TRUNCATE game";
+        var statement = "TRUNCATE TABLE game";
         executeUpdate(statement);
     }
 
     public int createGame(String gameName) throws DataAccessException {
         var statement = "INSERT INTO game (whiteUsername, blackUsername, gameName, game) VALUES (?, ?, ?, ?)";
         ChessGame chessGame = new ChessGame();
-        GameD newGame = new GameD(0,null, null, gameName, chessGame);
+        GameD newGame = new GameD(null,null, null, gameName, chessGame);
         String json = new Gson().toJson(newGame);
         return executeUpdate(
-                statement, newGame.getWhiteUsername(),
-                newGame.getBlackUsername(), newGame.getGameName(), json
+                statement, null,
+                null, newGame.getGameName(), json
         );
     }
 
@@ -236,7 +243,7 @@ public class MySqlDataAccess implements DataAccess{
               `email` varchar(256) NOT NULL UNIQUE,
               PRIMARY KEY (`username`),
               UNIQUE INDEX(email)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+            )
             """,
             """
             CREATE TABLE IF NOT EXISTS  auth (
@@ -248,8 +255,7 @@ public class MySqlDataAccess implements DataAccess{
                 FOREIGN KEY (`username`)
                 REFERENCES user(`username`)
                 ON DELETE CASCADE
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
-            """,
+            )""",
             """
             CREATE TABLE IF NOT EXISTS  game (
               `gameID` int NOT NULL AUTO_INCREMENT,
@@ -269,8 +275,7 @@ public class MySqlDataAccess implements DataAccess{
                 FOREIGN KEY (`blackUsername`)
                 REFERENCES user(`username`)
                 ON DELETE CASCADE
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
-            """
+            )"""
     };
 
     private void configureDatabase() throws DataAccessException {

@@ -9,15 +9,14 @@ import service.UserService;
 public class ClearHandler {
     private final UserService userService;
     private final GameService gameService;
-    private final Gson gson = new Gson();
 
     public ClearHandler(UserService userService, GameService gameService) {
         this.userService = userService; this.gameService = gameService;
     }
-    public void clearAll(Context ctx) throws DataAccessException {
-        userService.clearUsers();
+    public void clear(Context ctx) throws DataAccessException {
         userService.clearAuth();
         gameService.clearGames();
+        userService.clearUsers();
         ctx.status(200);
     }
 }

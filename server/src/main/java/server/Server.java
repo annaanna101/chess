@@ -15,7 +15,7 @@ public class Server {
 
     public Server() {
 //        DataAccess dataAccess = new MemoryDataAccess();
-        DataAccess dataAccess = null;
+        DataAccess dataAccess;
         try {
             dataAccess = new MySqlDataAccess();
         } catch (DataAccessException e) {
@@ -37,7 +37,7 @@ public class Server {
         javalin.post("/user", registrationHandler::register);
         javalin.post("/session", loginHandler::login);
         javalin.delete("/session", logoutHandler::logout);
-        javalin.delete("/db",clearHandler::clearAll);
+        javalin.delete("/db",clearHandler::clear);
         javalin.post("/game", createGameHandler::createGame);
         javalin.get("/game", listHandler::listGames);
         javalin.put("/game", joinHandler::joinGame);

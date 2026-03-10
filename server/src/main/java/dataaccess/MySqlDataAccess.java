@@ -48,7 +48,7 @@ public class MySqlDataAccess implements DataAccess{
                 }
             }
         } catch (Exception e){
-            throw new DataAccessException(String.format("Unable to read data: %s", e.getMessage()));
+            throw new DataAccessException(String.format("Error: Unable to read data: %s", e.getMessage()));
         }
         return null;
     }
@@ -66,7 +66,7 @@ public class MySqlDataAccess implements DataAccess{
                 }
             }
         } catch (Exception e){
-            throw new DataAccessException(String.format("Unable to read data: %s", e.getMessage()));
+            throw new DataAccessException(String.format("Error: Unable to read data: %s", e.getMessage()));
         }
         return null;
     }
@@ -90,7 +90,7 @@ public class MySqlDataAccess implements DataAccess{
                 }
             }
         } catch (Exception e){
-            throw new DataAccessException(String.format("Unable to read data: %s", e.getMessage()));
+            throw new DataAccessException(String.format("Error: Unable to read data: %s", e.getMessage()));
         }
         return result;
     }
@@ -117,7 +117,7 @@ public class MySqlDataAccess implements DataAccess{
                 }
             }
         } catch (Exception e){
-            throw new DataAccessException(String.format("Unable to read data: %s", e.getMessage()));
+            throw new DataAccessException(String.format("Error: Unable to read data: %s", e.getMessage()));
         }
         return null;
     }
@@ -129,17 +129,31 @@ public class MySqlDataAccess implements DataAccess{
 
     public void clearUsers() throws DataAccessException {
         var statement = "DELETE FROM `user`";
-        executeUpdate(statement);
+        try {
+            executeUpdate(statement);
+        } catch (Exception e){
+            throw new DataAccessException(String.format("Error: Unable to read data: %s", e.getMessage()));
+        }
+
+
     }
 
     public void clearAuths() throws DataAccessException {
         var statement = "DELETE FROM `auth`";
-        executeUpdate(statement);
+        try {
+            executeUpdate(statement);
+        } catch (Exception e){
+            throw new DataAccessException(String.format("Error: Unable to read data: %s", e.getMessage()));
+        }
     }
 
     public void clearGames() throws DataAccessException {
         var statement = "DELETE FROM `game`";
-        executeUpdate(statement);
+        try {
+            executeUpdate(statement);
+        } catch (Exception e){
+            throw new DataAccessException(String.format("Error: Unable to read data: %s", e.getMessage()));
+        }
     }
 
     public int createGame(String gameName) throws DataAccessException {
@@ -156,7 +170,7 @@ public class MySqlDataAccess implements DataAccess{
     public void updateGame(Integer gameID, String playerColor, String username) throws DataAccessException {
         GameD game = getGame(gameID);
         if (game == null) {
-            throw new DataAccessException("Game not found");
+            throw new DataAccessException("Error: Game not found");
         }
         /*
         * Select the game’s state (JSON string) from the database
@@ -196,7 +210,7 @@ public class MySqlDataAccess implements DataAccess{
                 }
             }
         } catch (Exception e){
-            throw new DataAccessException(String.format("Unable to read data: %s", e.getMessage()));
+            throw new DataAccessException(String.format("Error: Unable to read data: %s", e.getMessage()));
         }
         return null;
     }
@@ -229,7 +243,7 @@ public class MySqlDataAccess implements DataAccess{
                 return 0;
             }
         } catch (SQLException e) {
-            throw new DataAccessException(String.format("unable to update database: %s, %s", statement, e.getMessage()));
+            throw new DataAccessException(String.format("Error: Unable to update database: %s, %s", statement, e.getMessage()));
         }
     }
 
@@ -285,7 +299,7 @@ public class MySqlDataAccess implements DataAccess{
                 }
             }
         } catch (SQLException ex) {
-            throw new DataAccessException(String.format("Unable to configure database: %s", ex.getMessage()));
+            throw new DataAccessException(String.format("Error: Unable to configure database: %s", ex.getMessage()));
         }
     }
 }

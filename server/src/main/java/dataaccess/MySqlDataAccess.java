@@ -128,17 +128,17 @@ public class MySqlDataAccess implements DataAccess{
     }
 
     public void clearUsers() throws DataAccessException {
-        var statement = "TRUNCATE TABLE `user`";
+        var statement = "DELETE FROM `user`";
         executeUpdate(statement);
     }
 
     public void clearAuths() throws DataAccessException {
-        var statement = "TRUNCATE TABLE `auth`";
+        var statement = "DELETE FROM `auth`";
         executeUpdate(statement);
     }
 
     public void clearGames() throws DataAccessException {
-        var statement = "TRUNCATE TABLE `game`";
+        var statement = "DELETE FROM `game`";
         executeUpdate(statement);
     }
 

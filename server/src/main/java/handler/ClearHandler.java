@@ -15,7 +15,7 @@ public class ClearHandler {
     public ClearHandler(UserService userService, GameService gameService) {
         this.userService = userService; this.gameService = gameService;
     }
-    public void clear(Context ctx) throws DataAccessException {
+    public void clear(Context ctx) {
         try {
             userService.clearAuth();
             gameService.clearGames();

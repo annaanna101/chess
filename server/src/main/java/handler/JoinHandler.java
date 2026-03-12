@@ -22,8 +22,13 @@ public class JoinHandler {
                 ctx.status(401).json(new Server.ErrorResponse("Error: missing authToken"));
                 return;
             }
-            JoinRequest request =
-                    gson.fromJson(ctx.body(), JoinRequest.class);
+            JoinRequest request = gson.fromJson(ctx.body(), JoinRequest.class);
+            String color = request.playerColor();
+            if (color == null || (!color.equals("WHITE") && !color.equals("BLACK"))){
+                ctx.status(400);
+                ctx.json(new Server.ErrorResponse("Error: invalid color"));
+                return;
+            }
             gameService.joinGame(request, authToken);
             ctx.status(200);
         } catch (DataAccessException e) {

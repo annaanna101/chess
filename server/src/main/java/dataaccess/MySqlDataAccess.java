@@ -178,20 +178,19 @@ public class MySqlDataAccess implements DataAccess{
         if (game == null) {
             throw new DataAccessException("Error: Game not found");
         }
-        /*
-        * Select the game’s state (JSON string) from the database
-        * Deserialize the JSON string to a ChessGame Java object
-        * Update the state of the ChessGame object
-        * Re-serialize the Chess game to a JSON string
-        * Update the game’s JSON string in the database
-        **/
         if (playerColor.contains("WHITE")){
+            if (game.getWhiteUsername() != null) {
+                throw new DataAccessException("Error: already taken");
+            }
             var statement = "UPDATE game SET whiteUsername=?, game=? WHERE gameID=?";
             ChessGame gameBoard = game.getGame();
             GameD updatedGame = new GameD(gameID, username, game.getBlackUsername(), game.getGameName(), gameBoard);
             String json = new Gson().toJson(updatedGame);
             executeUpdate(statement, username, json, gameID);
         } else if (playerColor.contains("BLACK")){
+            if (game.getBlackUsername() != null) {
+                throw new DataAccessException("Error: already taken");
+            }
             var statement = "UPDATE game SET blackUsername=?, game=? WHERE gameID=?";
             ChessGame gameBoard = game.getGame();
             GameD updatedGame = new GameD(gameID, game.getWhiteUsername(), username, game.getGameName(), gameBoard);
@@ -227,6 +226,9 @@ public class MySqlDataAccess implements DataAccess{
     }
     public boolean verifyUser(String username, String providedClearTextPassword) throws DataAccessException {
         var hashedPassword = readHashedPasswordFromDatabase(username);
+        if (hashedPassword == null) {
+            return false;
+        }
         return BCrypt.checkpw(providedClearTextPassword, hashedPassword);
     }
 

@@ -1,5 +1,6 @@
 package handler;
 
+import com.google.gson.JsonSyntaxException;
 import model.JoinRequest;
 import com.google.gson.Gson;
 import dataaccess.DataAccessException;
@@ -24,7 +25,7 @@ public class JoinHandler {
             }
             JoinRequest request = gson.fromJson(ctx.body(), JoinRequest.class);
             String color = request.playerColor();
-            if (color == null || (!color.equals("WHITE") && !color.equals("BLACK"))){
+            if (color == null || (!color.contains("WHITE") && !color.contains("BLACK"))){
                 ctx.status(400);
                 ctx.json(new Server.ErrorResponse("Error: invalid color"));
                 return;
@@ -43,7 +44,9 @@ public class JoinHandler {
                 ctx.status(500);
             }
             ctx.result(gson.toJson(new Server.ErrorResponse(message)));
+        } catch (JsonSyntaxException | NullPointerException e){
+            ctx.status(400);
+            ctx.json(new Server.ErrorResponse("Error: invalid request body"));
         }
-
     }
 }

@@ -1,17 +1,9 @@
 package dataaccess;
 
-import chess.ChessGame;
 import model.*;
-import org.eclipse.jetty.server.Authentication;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import service.GameService;
-import service.UserService;
-
-import javax.xml.crypto.Data;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -33,7 +25,7 @@ public class DatabaseTest {
     //add user
     @Test
     void addUserPositive() throws DataAccessException{
-        UserD user = new UserD("testUser1", "password1", "email");
+        UserD user = new UserD("testUser1", "password1", "e");
         dataAccess.addUser(user);
         assertNotNull(dataAccess.getUser("testUser1"));
     }
@@ -47,7 +39,7 @@ public class DatabaseTest {
     //get user
     @Test
     void getUserPositive() throws DataAccessException{
-        UserD user = new UserD("testUser1", "password1", "email");
+        UserD user = new UserD("testUser1", "pass1", "email");
         dataAccess.addUser(user);
         dataAccess.getUser("testUser1");
         assertEquals("testUser1", user.username());
@@ -85,7 +77,7 @@ public class DatabaseTest {
     //createauth
     @Test
     void createAuthPositive() throws DataAccessException{
-        UserD user = new UserD("testUser1", "password1", "email");
+        UserD user = new UserD("testUser1", "pword1", "email");
         dataAccess.addUser(user);
         AuthD auth = dataAccess.createAuth("testUser1");
         assertNotNull(auth);
@@ -109,7 +101,7 @@ public class DatabaseTest {
     //delete auth
     @Test
     void deleteAuthPositive() throws DataAccessException {
-        UserD user = new UserD("testUser1", "password1", "email");
+        UserD user = new UserD("testUser1", "password", "email");
         dataAccess.addUser(user);
         AuthD auth = dataAccess.createAuth("testUser1");
         dataAccess.deleteAuth(auth.authToken());
@@ -118,7 +110,7 @@ public class DatabaseTest {
     //createGame
     @Test
     void createGamePositive() throws DataAccessException{
-        int gameId = dataAccess.createGame("Game1");
+        int gameId = dataAccess.createGame("Game");
         assertNotNull(dataAccess.getGame(gameId));
     }
     @Test
@@ -129,7 +121,7 @@ public class DatabaseTest {
     //updateGame
     @Test
     void updateGamePos() throws DataAccessException{
-        UserD user = new UserD("testUser1", "password1", "email");
+        UserD user = new UserD("testUser1", "password1", "e");
         dataAccess.addUser(user);
         int id = dataAccess.createGame("game1");
         dataAccess.updateGame(id, "WHITE", "testUser1");
@@ -151,7 +143,7 @@ public class DatabaseTest {
 
     @Test
     void verifyUserNeg() throws DataAccessException {
-        dataAccess.addUser(new UserD("user1", "pass", "email"));
+        dataAccess.addUser(new UserD("user1", "pass", "em"));
         assertFalse(dataAccess.verifyUser("user1", "wrong"));
     }
 }

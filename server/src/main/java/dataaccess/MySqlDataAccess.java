@@ -178,6 +178,9 @@ public class MySqlDataAccess implements DataAccess{
         if (game == null) {
             throw new DataAccessException("Error: Game not found");
         }
+        if (!"WHITE".equals(playerColor) && !"BLACK".equals(playerColor)) {
+            throw new DataAccessException("Error: bad request");
+        }
         if (playerColor.contains("WHITE")){
             if (game.getWhiteUsername() != null) {
                 throw new DataAccessException("Error: already taken");

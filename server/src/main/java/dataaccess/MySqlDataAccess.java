@@ -161,10 +161,16 @@ public class MySqlDataAccess implements DataAccess{
         ChessGame chessGame = new ChessGame();
         GameD newGame = new GameD(null,null, null, gameName, chessGame);
         String json = new Gson().toJson(newGame);
-        return executeUpdate(
+
+        int id =  executeUpdate(
                 statement, null,
                 null, newGame.getGameName(), json
         );
+        GameD updatedGame = new GameD(id, null, null, gameName, chessGame);
+        String updatedJson = new Gson().toJson(updatedGame);
+        executeUpdate("UPDATE game SET game=? WHERE gameID=?", updatedJson, id);
+
+        return id;
     }
 
     public void updateGame(Integer gameID, String playerColor, String username) throws DataAccessException {

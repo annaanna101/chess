@@ -181,7 +181,7 @@ public class MySqlDataAccess implements DataAccess{
         if (!"WHITE".equals(playerColor) && !"BLACK".equals(playerColor)) {
             throw new DataAccessException("Error: bad request");
         }
-        if (playerColor.contains("WHITE")){
+        if (playerColor.equals("WHITE")){
             if (game.getWhiteUsername() != null) {
                 throw new DataAccessException("Error: already taken");
             }
@@ -190,7 +190,7 @@ public class MySqlDataAccess implements DataAccess{
             GameD updatedGame = new GameD(gameID, username, game.getBlackUsername(), game.getGameName(), gameBoard);
             String json = new Gson().toJson(updatedGame);
             executeUpdate(statement, username, json, gameID);
-        } else if (playerColor.contains("BLACK")){
+        } else {
             if (game.getBlackUsername() != null) {
                 throw new DataAccessException("Error: already taken");
             }

@@ -25,7 +25,7 @@ public class JoinHandler {
             }
             JoinRequest request = gson.fromJson(ctx.body(), JoinRequest.class);
             String color = request.playerColor();
-            if (color == null || (!color.contains("WHITE") && !color.contains("BLACK"))){
+            if (color == null || (!color.equals("WHITE") && !color.equals("BLACK"))){
                 ctx.status(400);
                 ctx.json(new Server.ErrorResponse("Error: invalid color"));
                 return;

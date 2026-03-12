@@ -20,14 +20,14 @@ public class JoinHandler {
         try {
             String authToken = ctx.header("authorization");
             if (authToken == null || authToken.isBlank()) {
-                ctx.status(401).json(new Server.ErrorResponse("Error: missing authToken"));
+                ctx.status(401).json(gson.toJson(new Server.ErrorResponse("Error: missing authToken")));
                 return;
             }
             JoinRequest request = gson.fromJson(ctx.body(), JoinRequest.class);
             String color = request.playerColor();
             if (color == null || (!color.equals("WHITE") && !color.equals("BLACK"))){
                 ctx.status(400);
-                ctx.json(new Server.ErrorResponse("Error: invalid color"));
+                ctx.json(gson.toJson(new Server.ErrorResponse("Error: invalid color")));
                 return;
             }
             gameService.joinGame(request, authToken);
@@ -46,7 +46,7 @@ public class JoinHandler {
             ctx.result(gson.toJson(new Server.ErrorResponse(message)));
         } catch (JsonSyntaxException | NullPointerException e){
             ctx.status(400);
-            ctx.json(new Server.ErrorResponse("Error: invalid request body"));
+            ctx.json(gson.toJson(new Server.ErrorResponse("Error: invalid request body")));
         }
     }
 }

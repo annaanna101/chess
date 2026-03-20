@@ -3,14 +3,19 @@ package ui;
 import com.sun.nio.sctp.NotificationHandler;
 
 import javax.management.Notification;
+import java.util.Arrays;
 import java.util.Scanner;
 
-public class Repl implements NotificationHandler {
+public class Prelogin_Repl implements NotificationHandler {
     private final ChessClient client;
 
-    public Repl(String serverUrl){
+    public Prelogin_Repl(String serverUrl){
         client = new ChessClient(serverUrl);
     }
+    private void printPrompt() {
+        System.out.print("\n>>> ");
+    }
+
 
     public void run(){
         System.out.println("Welcome to 240 chess. Type Help to get started");
@@ -37,4 +42,6 @@ public class Repl implements NotificationHandler {
         System.out.println(notification.getMessage());
         printPrompt();
     }
+
+
 }

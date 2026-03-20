@@ -1,6 +1,7 @@
 package ui;
 
 import com.sun.nio.sctp.NotificationHandler;
+import server.ServerFacade;
 
 import java.util.Arrays;
 
@@ -17,9 +18,9 @@ public class ChessClient implements NotificationHandler {
             String cmd = (tokens.length > 0) ? tokens[0] : "help";
             String[] params = Arrays.copyOfRange(tokens, 1, tokens.length);
             return switch (cmd) {
-                case "register" -> signIn(params);
-                case "login" -> rescuePet(params);
-                case "help" -> signOut();
+                case "register" -> register(params);
+                case "login" -> login(params);
+                case "help" -> help();
                 case "quit" -> "quit";
                 default -> help();
             };
@@ -30,8 +31,29 @@ public class ChessClient implements NotificationHandler {
 
     public String signIn(String... params){
         if (params.length >= 1) {
-            state =
+            try{
+                if (server.signin());
+            }
         }
+    }
+    public String help() {
+        if (state == State.SIGNEDOUT) {
+            return """
+                    register <USERNAME> <PASSWORD> <EMAIL> - to create an account
+                    login <USERNAME> <PASSWORD> - to play chess
+                    quit - playing chess
+                    help - with possible commands
+                    """;
+        }
+        return """
+                create <NAME> - a game
+                list - games
+                join <ID> [WHITE|BLACK] - a game
+                observe <ID> - a game
+                logout - when you are done
+                quit - playing chess
+                help - with possible commands
+                """;
     }
 
 }

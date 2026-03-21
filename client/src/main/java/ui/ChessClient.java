@@ -85,6 +85,28 @@ public class ChessClient implements NotificationHandler {
         return String.format(String.valueOf(result));
     }
 
+    public String join(String...params){
+        if (params.length>= 2){
+            int id = Integer.parseInt(params[0]);
+            String playerColor = params[1];
+            JoinRequest request = new JoinRequest(id, playerColor);
+            server.joinGame(request);
+            return String.format("You have now joined Game: %s", request.gameID());
+        }
+        throw new RuntimeException("Expected: join <ID> [WHITE|BLACK]");
+    }
+
+    public String observe(){
+        return null;
+    }
+
+    public String logout(){
+        LogoutRequest request = new LogoutRequest(authToken);
+        server.logout(request);
+        return "You have been logged out. Goodbye!";
+    }
+
+
 
     public String help() {
         if (state == State.SIGNEDOUT) {

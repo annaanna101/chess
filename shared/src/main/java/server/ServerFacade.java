@@ -4,10 +4,18 @@ import com.google.gson.Gson;
 import model.*;
 
 import java.net.URI;
+import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.Collection;
 
 public class ServerFacade {
+    private final HttpClient client = HttpClient.newHttpClient();
+    private final String serverUrl;
+
+    public ServerFacade(String url) {
+        serverUrl = url;
+    }
 
     public RegisterResult register(RegisterRequest request){
         var web_request = buildRequest("POST", "/user", request);
@@ -21,7 +29,33 @@ public class ServerFacade {
         return handleResponse(response, LoginResult.class);
     }
 
-    public joinGame(JoinRequest request){}
+    public void logout (LogoutRequest request){
+        var web_request = buildRequest("DELETE", "/session", request);
+        sendRequest(web_request);
+    }
+
+    public void clear (){
+        var web_request = buildRequest("DELETE", "/db", null);
+        sendRequest(web_request);
+    }
+
+    public CreateResult create(CreateRequest request){
+        var web_request = buildRequest("POST", "/game", request);
+        var response = sendRequest(web_request);
+        return handleResponse(response, CreateResult.class);
+    }
+
+    public ListGameResult list_games(AuthD authToken){
+        var web_request = buildRequest("GET", "/game", null);
+        var response = sendRequest(web_request);
+        return handleResponse(response, ListGameResult.class);
+    }
+
+    public void joinGame(JoinRequest request){
+        var web_request = buildRequest("PUT", "/game", null);
+        sendRequest(web_request);
+    }
+
 
     private HttpRequest buildRequest(String method, String path, Object body) {
         var request = HttpRequest.newBuilder()

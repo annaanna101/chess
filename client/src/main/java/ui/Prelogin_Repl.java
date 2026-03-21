@@ -6,7 +6,7 @@ import javax.management.Notification;
 import java.util.Arrays;
 import java.util.Scanner;
 
-public class Prelogin_Repl implements NotificationHandler {
+public class Prelogin_Repl {
     private final ChessClient client;
 
     public Prelogin_Repl(String serverUrl){

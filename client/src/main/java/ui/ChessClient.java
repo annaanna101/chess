@@ -9,6 +9,8 @@ import java.util.Arrays;
 public class ChessClient implements NotificationHandler {
     private final ServerFacade server;
     private State state = State.SIGNEDOUT;
+    private AuthD authToken;
+
     public ChessClient(String serverUrl) {
         server = new ServerFacade(serverUrl);
     }
@@ -35,7 +37,7 @@ public class ChessClient implements NotificationHandler {
                 case "create" -> create(params);
                 case "list" -> list();
                 case "join" -> join(params);
-                case "observe" -> observe(params);
+                case "observe" -> observe();
                 case "logout" -> logout();
                 case "quit" -> "quit";
                 default -> help();
@@ -53,6 +55,7 @@ public class ChessClient implements NotificationHandler {
             String email = params[2];
             RegisterRequest request = new RegisterRequest(username, password, email);
             RegisterResult result = server.register(request);
+            this.authToken = new AuthD(result.authToken(), result.username());
             return String.format("Successful Registration. Your Username is: %s", result.username());
         }
         throw new RuntimeException("Expected: <USERNAME> <PASSWORD> <EMAIL>");
@@ -63,7 +66,8 @@ public class ChessClient implements NotificationHandler {
             String username = params[0];
             String password = params[1];
             LoginRequest request = new LoginRequest(username, password);
-            server.login(request);
+            LoginResult result = server.login(request);
+            this.authToken = new AuthD(result.authToken(), result.username());
             state = State.SIGNEDIN;
             return String.format("You are successfully logged in as %s", username);
         }
@@ -73,7 +77,7 @@ public class ChessClient implements NotificationHandler {
     public String create(String...params){
         if (params.length >= 1){
             String gameName = params[0];
-            CreateRequest request = new CreateRequest(gameName, authToken);
+            CreateRequest request = new CreateRequest(gameName, authToken.authToken());
             CreateResult result = server.create(request);
             return String.format("Created game: %s", result);
         }
@@ -96,12 +100,16 @@ public class ChessClient implements NotificationHandler {
         throw new RuntimeException("Expected: join <ID> [WHITE|BLACK]");
     }
 
-    public String observe(){
+    public String observe(String...params){
+        if (params.length >= 1){
+            int id = Integer.parseInt(params[0]);
+            // watches the game at id
+        }
         return null;
     }
 
     public String logout(){
-        LogoutRequest request = new LogoutRequest(authToken);
+        LogoutRequest request = new LogoutRequest(authToken.authToken());
         server.logout(request);
         return "You have been logged out. Goodbye!";
     }

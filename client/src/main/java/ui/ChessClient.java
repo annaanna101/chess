@@ -1,9 +1,7 @@
 package ui;
 
 import com.sun.nio.sctp.NotificationHandler;
-import model.LoginRequest;
-import model.RegisterRequest;
-import model.RegisterResult;
+import model.*;
 import server.ServerFacade;
 
 import java.util.Arrays;
@@ -15,29 +13,39 @@ public class ChessClient implements NotificationHandler {
         server = new ServerFacade(serverUrl);
     }
 
+    public State getState(){
+        return state;
+    }
+
     public String eval(String input) {
         try {
             String[] tokens = input.toLowerCase().split(" ");
             String cmd = (tokens.length > 0) ? tokens[0] : "help";
             String[] params = Arrays.copyOfRange(tokens, 1, tokens.length);
+            if (state == State.SIGNEDOUT){
+                return switch (cmd) {
+                    case "register" -> register(params);
+                    case "login" -> login(params);
+                    case "quit" -> "quit";
+                    default -> help();
+                };
+            }
+            //post logout
             return switch (cmd) {
-                case "register" -> register(params);
-                case "login" -> login(params);
+                case "create" -> create(params);
+                case "list" -> list();
+                case "join" -> join(params);
+                case "observe" -> observe(params);
+                case "logout" -> logout();
                 case "quit" -> "quit";
                 default -> help();
             };
-        } catch (ResponseException ex) {
+
+        } catch (Exception ex) {
             return ex.getMessage();
         }
     }
 
-//    public String signIn(String... params){
-//        if (params.length >= 1) {
-//            try{
-//                if (server.signin());
-//            }
-//        }
-//    }
     public String register(String... params){
         if (params.length >= 3){
             String username = params[0];
@@ -47,20 +55,34 @@ public class ChessClient implements NotificationHandler {
             RegisterResult result = server.register(request);
             return String.format("Successful Registration. Your Username is: %s", result.username());
         }
-        throw new execption;
+        throw new RuntimeException("Expected: <USERNAME> <PASSWORD> <EMAIL>");
     }
 
     public String login(String...params){
-        try{
-            if (params.length >= 1) {
-                LoginRequest request = new LoginRequest(username, password);
-                server.login(request);
-                state = State.SIGNEDIN;
-            }
-        } catch (Exception e) {
-            //fix
-            throw new RuntimeException(e);
+        if (params.length >= 2) {
+            String username = params[0];
+            String password = params[1];
+            LoginRequest request = new LoginRequest(username, password);
+            server.login(request);
+            state = State.SIGNEDIN;
+            return String.format("You are successfully logged in as %s", username);
         }
+        throw new RuntimeException("Expected: login <USERNAME> <PASSWORD");
+    }
+
+    public String create(String...params){
+        if (params.length >= 1){
+            String gameName = params[0];
+            CreateRequest request = new CreateRequest(gameName, authToken);
+            CreateResult result = server.create(request);
+            return String.format("Created game: %s", result);
+        }
+        throw new RuntimeException("Expected: create <NAME>");
+    }
+
+    public String list(){
+        ListGameResult result = server.list_games(authToken);
+        return String.format(String.valueOf(result));
     }
 
 

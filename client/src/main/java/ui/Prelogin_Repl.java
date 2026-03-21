@@ -12,10 +12,10 @@ public class Prelogin_Repl implements NotificationHandler {
     public Prelogin_Repl(String serverUrl){
         client = new ChessClient(serverUrl);
     }
+
     private void printPrompt() {
         System.out.print("\n>>> ");
     }
-
 
     public void run(){
         System.out.println("Welcome to 240 chess. Type Help to get started");
@@ -26,16 +26,19 @@ public class Prelogin_Repl implements NotificationHandler {
         while (!result.equals("quit")) {
             printPrompt();
             String line = scanner.nextLine();
-
             try{
                 result = client.eval(line);
                 System.out.print(result);
+                if (client.getState() == State.SIGNEDIN){
+                    new Postlogin_Repl(client).run();
+                    System.out.print(client.help());
+                }
             } catch (Throwable e){
                 var msg = e.toString();
                 System.out.print(msg);
             }
         }
-        System.out.println();
+        System.out.println("Goodbye!");
     }
 
     public void notify(Notification notification){

@@ -21,8 +21,10 @@ public class PostLogin_Repl {
             printPrompt();
             String line = scanner.nextLine();
             result = client.eval(line);
-            System.out.println(result);
-            if(result.equals("quit")){
+            if (result != null){
+                System.out.println(result);
+            }
+            if("quit".equals(result)){
                 System.exit(0);
             }
             if (line.startsWith("join") || line.startsWith("observe")){

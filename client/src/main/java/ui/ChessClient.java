@@ -32,7 +32,7 @@ public class ChessClient {
                     default -> help();
                 };
             }
-            //post logout
+
             return switch (cmd) {
                 case "create" -> create(params);
                 case "list" -> list();
@@ -49,14 +49,23 @@ public class ChessClient {
     }
 
     public String register(String... params){
-        if (params.length >= 3){
+        if (params.length >= 3) {
             String username = params[0];
             String password = params[1];
             String email = params[2];
-            RegisterRequest request = new RegisterRequest(username, password, email);
-            RegisterResult result = server.register(request);
-            this.authToken = new AuthD(result.authToken(), result.username());
-            return String.format("Successful Registration. Your Username is: %s", result.username());
+            try {
+                RegisterRequest request = new RegisterRequest(username, password, email);
+                RegisterResult result = server.register(request);
+                if (result == null || result.authToken() == null) {
+                    return "Registration failed: server returned null or invalid response.";
+                }
+                this.authToken = new AuthD(result.authToken(), result.username());
+                state = State.SIGNEDIN;
+                return String.format("Successful Registration. Your Username is: %s", result.username());
+
+            } catch (Exception e) {
+                return "Registration failed: " + e.getMessage();
+            }
         }
         throw new RuntimeException("Expected: <USERNAME> <PASSWORD> <EMAIL>");
     }
@@ -71,9 +80,9 @@ public class ChessClient {
             state = State.SIGNEDIN;
             return String.format("You are successfully logged in as %s", username);
         }
-        throw new RuntimeException("Expected: login <USERNAME> <PASSWORD");
+        throw new RuntimeException("Expected: login <USERNAME> <PASSWORD>");
     }
-
+    //create no worky
     public String create(String...params){
         if (params.length >= 1){
             String gameName = params[0];

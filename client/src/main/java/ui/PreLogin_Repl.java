@@ -10,26 +10,28 @@ public class PreLogin_Repl {
     }
 
     private void printPrompt() {
-        System.out.print("\n>>> ");
+        System.out.print("\n[LOGGED OUT] >>> ");
     }
 
     public void run(){
-        System.out.println("Welcome to 240 chess. Type Help to get started");
-        System.out.print(client.help());
+        System.out.println("Welcome to the CS 240 chess server! Type Help to get started");
+//        System.out.print(client.help());
 
         Scanner scanner = new Scanner(System.in);
         var result = "";
-        while (!result.equals("quit")) {
+        while (!"quit".equals(result)) {
             printPrompt();
             String line = scanner.nextLine();
             result = client.eval(line);
-            System.out.print(result);
+            if (result != null) {
+                System.out.print(result);
+            }
             if (client.getState() == State.SIGNEDIN){
                 new PostLogin_Repl(client).run();
                 System.out.print(client.help());
             }
         }
-        System.out.println("Goodbye!");
+        System.out.println(" Goodbye!");
     }
 
 }

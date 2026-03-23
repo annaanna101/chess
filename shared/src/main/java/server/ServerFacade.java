@@ -8,7 +8,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.Collection;
+import java.util.Map;
 
 public class ServerFacade {
     private final HttpClient client = HttpClient.newHttpClient();
@@ -92,22 +92,22 @@ public class ServerFacade {
             return HttpRequest.BodyPublishers.noBody();
         }
     }
-    private HttpResponse<String> sendRequest(HttpRequest request) throws ResponseException {
+    private HttpResponse<String> sendRequest(HttpRequest request) throws RuntimeException  {
         try {
             return client.send(request, HttpResponse.BodyHandlers.ofString());
         } catch (Exception ex) {
-            throw new ResponseException(ResponseException.Code.ServerError, ex.getMessage());
+            throw new RuntimeException("HTTP request failed", ex);
         }
     }
-    private <T> T handleResponse(HttpResponse<String> response, Class<T> responseClass) throws ResponseException {
-        var status = response.statusCode();
+    private <T> T handleResponse(HttpResponse<String> response, Class<T> responseClass) {
+        int status = response.statusCode();
         if (!isSuccessful(status)) {
-            var body = response.body();
+            String body = response.body();
             if (body != null) {
-                throw ResponseException.fromJson(body);
+                throw RuntimeExceptionFromJson(body);
             }
 
-            throw new ResponseException(ResponseException.fromHttpStatusCode(status), "other failure: " + status);
+            throw new RuntimeException("other failure: " + status);
         }
 
         if (responseClass != null) {
@@ -115,6 +115,17 @@ public class ServerFacade {
         }
 
         return null;
+    }
+
+    private RuntimeException RuntimeExceptionFromJson(String body) {
+        try {
+            // parse JSON if needed
+            var jsonObj = new Gson().fromJson(body, Map.class);
+            String msg = jsonObj.getOrDefault("error", "Unknown error").toString();
+            return new RuntimeException(msg);
+        } catch (Exception e) {
+            return new RuntimeException("Failed to parse error response: " + body, e);
+        }
     }
 
     private boolean isSuccessful(int status) {

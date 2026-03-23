@@ -3,39 +3,37 @@ package ui;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 
-import static ui.EscapeSequences.ERASE_SCREEN;
+import static ui.EscapeSequences.*;
 
 public class DrawBoard {
     static final String UNICODE_ESCAPE = "\u001b";
     private static final String SET_TEXT_COLOR = UNICODE_ESCAPE + "[38;5;";
     static final String SET_BG_COLOR = UNICODE_ESCAPE + "[48;5;";
 
-    private static final int BOARD_SIZE_IN_SQUARES = 8;
-    private static final int SQUARE_SIZE_IN_PADDED_CHARS = 1;
-    private static final int LINE_WIDTH_IN_PADDED_CHARS = 1;
+    private static final int BOARD_SIZE = 8;
 
     public static final String SET_BG_COLOR_BLACK = SET_BG_COLOR + "0m";
-    public static final String SET_BG_COLOR_WHITE = SET_BG_COLOR + "15m";
     public static final String SET_BG_COLOR_LIGHT_GREY = SET_BG_COLOR + "242m";
-    public static final String RESET_BG_COLOR = UNICODE_ESCAPE + "[49m";
-
-    public static final String SET_TEXT_COLOR_LIGHT_GREY = SET_TEXT_COLOR + "242m";
     public static final String SET_TEXT_COLOR_WHITE = SET_TEXT_COLOR + "15m";
     public static final String SET_TEXT_COLOR_BLACK = SET_TEXT_COLOR + "0m";
+    public static final String SET_TEXT_COLOR_DARK_GREY = SET_TEXT_COLOR + "235m";
 
-    public static final String WHITE_KING = " ♔ ";
-    public static final String WHITE_QUEEN = " ♕ ";
-    public static final String WHITE_BISHOP = " ♗ ";
-    public static final String WHITE_KNIGHT = " ♘ ";
-    public static final String WHITE_ROOK = " ♖ ";
-    public static final String WHITE_PAWN = " ♙ ";
-    public static final String BLACK_KING = " ♚ ";
-    public static final String BLACK_QUEEN = " ♛ ";
-    public static final String BLACK_BISHOP = " ♝ ";
-    public static final String BLACK_KNIGHT = " ♞ ";
-    public static final String BLACK_ROOK = " ♜ ";
-    public static final String BLACK_PAWN = " ♟ ";
-    public static final String EMPTY = " \u2003 ";
+    // ALL CELLS MUST BE WIDTH = 3
+    public static final String EMPTY = "   ";
+
+    public static final String WHITE_KING = " K ";
+    public static final String WHITE_QUEEN = " Q ";
+    public static final String WHITE_BISHOP = " B ";
+    public static final String WHITE_KNIGHT = " N ";
+    public static final String WHITE_ROOK = " R ";
+    public static final String WHITE_PAWN = " P ";
+
+    public static final String BLACK_KING = " k ";
+    public static final String BLACK_QUEEN = " q ";
+    public static final String BLACK_BISHOP = " b ";
+    public static final String BLACK_KNIGHT = " n ";
+    public static final String BLACK_ROOK = " r ";
+    public static final String BLACK_PAWN = " p ";
 
     public static void main(String[] args) {
         var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
@@ -43,112 +41,64 @@ public class DrawBoard {
         out.print(ERASE_SCREEN);
 
         drawHeaders(out);
+        drawBoard(out);
+        drawHeaders(out);
 
-        drawWhiteChessBoard(out);
-
-        out.print(SET_BG_COLOR_BLACK);
-        out.print(SET_TEXT_COLOR_WHITE);
+        reset(out);
     }
 
-    private static void drawWhiteChessBoard(PrintStream out) {
-
-        for (int boardRow = 0; boardRow < BOARD_SIZE_IN_SQUARES; ++boardRow) {
-
-            drawRowOfSquares(out);
-
-            if (boardRow < BOARD_SIZE_IN_SQUARES - 1) {
-                // Draw horizontal row separator.
-//                drawHorizontalLine(out);
-                setBlack(out);
-            }
+    private static void drawBoard(PrintStream out) {
+        for (int row = 0; row < BOARD_SIZE; row++) {
+            drawRow(out, row);
         }
     }
 
-    private static void drawHeaders(PrintStream out) {
-        setGrey(out);
+    private static void drawRow(PrintStream out, int row) {
+        int displayRow = row + 1;
 
-        String[] headers = { "h", "g", "f" , "e", "d", "c", "b", "a"};
-        for (int boardCol = 0; boardCol < BOARD_SIZE_IN_SQUARES; ++boardCol) {
-            drawHeader(out, headers[boardCol]);
+        // LEFT label (3 chars)
+        header(out);
+        out.print(" " + displayRow + " ");
 
-            if (boardCol < BOARD_SIZE_IN_SQUARES - 1) {
-                out.print(EMPTY.repeat(LINE_WIDTH_IN_PADDED_CHARS));
+        for (int col = 0; col < BOARD_SIZE; col++) {
+            boolean dark = (row + col) % 2 == 0;
+            String piece = getPiece(row, col);
+
+            if (dark) {
+                darkSquare(out);
+            } else {
+                lightSquare(out);
             }
+
+            setPieceColor(out, piece);
+            out.print(piece);
         }
 
+        // RIGHT label
+        header(out);
+        out.print(" " + displayRow + " ");
+
+        reset(out);
         out.println();
     }
 
-    private static void drawHeader(PrintStream out, String header) {
-        int prefixLength = SQUARE_SIZE_IN_PADDED_CHARS / 2;
-        int suffixLength = SQUARE_SIZE_IN_PADDED_CHARS - prefixLength - 1;
+    private static void drawHeaders(PrintStream out) {
+        String[] headers = {"h","g","f","e","d","c","b","a"};
 
-        out.print(EMPTY.repeat(prefixLength));
-        printHeaderText(out, header);
-        out.print(EMPTY.repeat(suffixLength));
-    }
+        // left padding (matches row numbers)
+        out.print("   ");
 
-    private static void printHeaderText(PrintStream out, String player) {
-        out.print(SET_BG_COLOR_LIGHT_GREY);
-        out.print(SET_TEXT_COLOR_BLACK);
-        out.print(player);
-        setGrey(out);
-    }
-
-    private static void printPlayer(PrintStream out, String player) {
-        out.print(SET_BG_COLOR_WHITE);
-        out.print(SET_TEXT_COLOR_BLACK);
-
-        out.print(player);
-
-        setWhite(out);
-    }
-    private static void drawRowOfSquares(PrintStream out) {
-
-        for (int squareRow = 0; squareRow < SQUARE_SIZE_IN_PADDED_CHARS; ++squareRow) {
-            for (int boardCol = 0; boardCol < BOARD_SIZE_IN_SQUARES; ++boardCol) {
-                setWhite(out);
-                boolean isWhiteSquare = (squareRow + boardCol) % 2 == 0;
-                if (isWhiteSquare) {
-                    setWhite(out);
-                } else {
-                    out.print(SET_BG_COLOR_LIGHT_GREY);
-                }
-                if (squareRow == SQUARE_SIZE_IN_PADDED_CHARS / 2) {
-                    int prefixLength = SQUARE_SIZE_IN_PADDED_CHARS / 2;
-                    int suffixLength = SQUARE_SIZE_IN_PADDED_CHARS - prefixLength - 1;
-
-                    out.print(EMPTY.repeat(prefixLength));
-                    String piece = getPiece(squareRow, boardCol);
-                    out.print(EMPTY.repeat(prefixLength));
-                    out.print(piece);
-                    out.print(EMPTY.repeat(suffixLength));
-                    out.print(EMPTY.repeat(suffixLength));
-                }
-                else {
-                    out.print(EMPTY.repeat(SQUARE_SIZE_IN_PADDED_CHARS));
-                }
-
-                setBlack(out);
-            }
-
-            out.println();
+        for (String h : headers) {
+            header(out);
+            out.print(" " + h + " ");
         }
 
+        reset(out);
+        out.println();
     }
-    private static void setWhite(PrintStream out) {
-        out.print(SET_BG_COLOR_WHITE);
-        out.print(SET_TEXT_COLOR_WHITE);
-    }
-    private static void setBlack(PrintStream out) {
-        out.print(SET_BG_COLOR_BLACK);
-        out.print(SET_TEXT_COLOR_BLACK);
-    }
-    private static void setGrey(PrintStream out) {
-        out.print(SET_BG_COLOR_LIGHT_GREY);
-        out.print(SET_TEXT_COLOR_BLACK);
-    }
+
     private static String getPiece(int row, int col) {
+        // TOP = BLACK
         if (row == 0) return switch (col) {
             case 0, 7 -> BLACK_ROOK;
             case 1, 6 -> BLACK_KNIGHT;
@@ -157,9 +107,12 @@ public class DrawBoard {
             case 4 -> BLACK_KING;
             default -> EMPTY;
         };
+
         if (row == 1) return BLACK_PAWN;
 
+        // BOTTOM = WHITE
         if (row == 6) return WHITE_PAWN;
+
         if (row == 7) return switch (col) {
             case 0, 7 -> WHITE_ROOK;
             case 1, 6 -> WHITE_KNIGHT;
@@ -171,4 +124,33 @@ public class DrawBoard {
 
         return EMPTY;
     }
+    private static void setPieceColor(PrintStream out, String piece) {
+        if (piece.equals(EMPTY)) return;
+        if (Character.isUpperCase(piece.trim().charAt(0))) {
+            out.print(SET_TEXT_COLOR_WHITE);
+        } else {
+            out.print(SET_TEXT_COLOR_MAGENTA);
+        }
+    }
+
+    private static void darkSquare(PrintStream out) {
+        out.print(SET_BG_COLOR_DARK_GREY);
+        out.print(SET_TEXT_COLOR_DARK_GREY);
+    }
+
+    private static void lightSquare(PrintStream out) {
+        out.print(SET_BG_COLOR_LIGHT_GREY);
+        out.print(SET_TEXT_COLOR_BLACK);
+    }
+
+    private static void header(PrintStream out) {
+        out.print(SET_BG_COLOR_LIGHT_GREY);
+        out.print(SET_TEXT_COLOR_BLACK);
+    }
+
+    private static void reset(PrintStream out) {
+        out.print(SET_BG_COLOR_BLACK);
+        out.print(SET_TEXT_COLOR_WHITE);
+    }
+
 }

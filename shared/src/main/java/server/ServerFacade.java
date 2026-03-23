@@ -1,5 +1,6 @@
 package server;
 
+import chess.ChessGame;
 import com.google.gson.Gson;
 import model.*;
 
@@ -46,16 +47,34 @@ public class ServerFacade {
     }
 
     public ListGameResult list_games(AuthD authToken){
-        var web_request = buildRequest("GET", "/game", null);
+        var web_request = HttpRequest.newBuilder()
+                .uri(URI.create(serverUrl + "/game"))
+                .GET()
+                .header("Authorization", authToken.authToken())
+                .build();
         var response = sendRequest(web_request);
         return handleResponse(response, ListGameResult.class);
     }
 
-    public void joinGame(JoinRequest request){
-        var web_request = buildRequest("PUT", "/game", null);
+    public void joinGame(JoinRequest request, AuthD authToken){
+        var web_request = HttpRequest.newBuilder()
+                .uri(URI.create(serverUrl + "/game"))
+                .PUT(makeRequestBody(request))
+                .header("Content-Type", "application/json")
+                .header("Authorization", authToken.authToken())
+                .build();;
         sendRequest(web_request);
     }
 
+    public ChessGame getGame(int gameID, AuthD authToken){
+        var request = HttpRequest.newBuilder()
+                .uri(URI.create(serverUrl + "/game/" + gameID))
+                .GET()
+                .header("Authorization", authToken.authToken()) // IMPORTANT
+                .build();
+        var response = sendRequest(request);
+        return handleResponse(response, ChessGame.class);
+    }
 
     private HttpRequest buildRequest(String method, String path, Object body) {
         var request = HttpRequest.newBuilder()

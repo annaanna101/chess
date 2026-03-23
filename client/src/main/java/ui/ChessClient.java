@@ -1,12 +1,12 @@
 package ui;
 
-import com.sun.nio.sctp.NotificationHandler;
+import chess.ChessGame;
 import model.*;
 import server.ServerFacade;
 
 import java.util.Arrays;
-
-public class ChessClient implements NotificationHandler {
+//implements NotificationHandler
+public class ChessClient {
     private final ServerFacade server;
     private State state = State.SIGNEDOUT;
     private AuthD authToken;
@@ -94,7 +94,7 @@ public class ChessClient implements NotificationHandler {
             int id = Integer.parseInt(params[0]);
             String playerColor = params[1];
             JoinRequest request = new JoinRequest(id, playerColor);
-            server.joinGame(request);
+            server.joinGame(request, authToken);
             return String.format("You have now joined Game: %s", request.gameID());
         }
         throw new RuntimeException("Expected: join <ID> [WHITE|BLACK]");
@@ -111,9 +111,12 @@ public class ChessClient implements NotificationHandler {
     public String logout(){
         LogoutRequest request = new LogoutRequest(authToken.authToken());
         server.logout(request);
+        state = State.SIGNEDOUT;
         return "You have been logged out. Goodbye!";
     }
-
+    public ChessGame getGame(int gameID){
+        return server.getGame(gameID, authToken);
+    }
 
 
     public String help() {

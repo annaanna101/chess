@@ -35,14 +35,20 @@ public class DrawBoard {
     public static final String BLACK_ROOK = " r ";
     public static final String BLACK_PAWN = " p ";
 
-    public static void main(String[] args) {
+    static void drawCorrectBoard(String color) {
         var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
 
         out.print(ERASE_SCREEN);
+        if (color.contains("WHITE") || color.contains("OBSERVE")){
+            drawHeaders(out);
+            drawBoard(out);
+            drawHeaders(out);
+        } else {
+            drawHeadersFlipped(out);
+            drawBoardFlipped(out);
+            drawHeadersFlipped(out);
 
-        drawHeaders(out);
-        drawBoard(out);
-        drawHeaders(out);
+        }
 
         reset(out);
     }
@@ -51,6 +57,41 @@ public class DrawBoard {
         for (int row = 0; row < BOARD_SIZE; row++) {
             drawRow(out, row);
         }
+    }
+
+    private static void drawBoardFlipped(PrintStream out) {
+        for (int row = BOARD_SIZE - 1; row >= 0; row--) {
+            drawRowFlipped(out, row);
+        }
+    }
+
+    private static void drawRowFlipped(PrintStream out, int row) {
+        int displayRow = BOARD_SIZE - row;
+
+        // LEFT label
+        header(out);
+        out.print(" " + displayRow + " ");
+
+        for (int col = BOARD_SIZE - 1; col >= 0; col--) {
+            boolean dark = (row + col) % 2 == 0;
+            String piece = getPiece(row, col);
+
+            if (dark) {
+                darkSquare(out);
+            } else {
+                lightSquare(out);
+            }
+
+            setPieceColor(out, piece);
+            out.print(piece);
+        }
+
+        // RIGHT label
+        header(out);
+        out.print(" " + displayRow + " ");
+
+        reset(out);
+        out.println();
     }
 
     private static void drawRow(PrintStream out, int row) {
@@ -81,8 +122,20 @@ public class DrawBoard {
         reset(out);
         out.println();
     }
-
     private static void drawHeaders(PrintStream out) {
+        String[] headers = {"a","b","c","d","e","f","g","h"};
+
+        out.print("   ");
+
+        for (String h : headers) {
+            header(out);
+            out.print(" " + h + " ");
+        }
+
+        reset(out);
+        out.println();
+    }
+    private static void drawHeadersFlipped(PrintStream out) {
         String[] headers = {"h","g","f","e","d","c","b","a"};
 
         // left padding (matches row numbers)
@@ -129,7 +182,7 @@ public class DrawBoard {
         if (Character.isUpperCase(piece.trim().charAt(0))) {
             out.print(SET_TEXT_COLOR_WHITE);
         } else {
-            out.print(SET_TEXT_COLOR_MAGENTA);
+            out.print(SET_TEXT_COLOR_GREEN);
         }
     }
 

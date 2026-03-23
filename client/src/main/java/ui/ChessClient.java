@@ -83,7 +83,7 @@ public class ChessClient {
         }
         throw new RuntimeException("Expected: login <USERNAME> <PASSWORD>");
     }
-    //create no worky
+
     public String create(String...params){
         if (params.length >= 1){
             String gameName = params[0];
@@ -93,13 +93,13 @@ public class ChessClient {
         }
         throw new RuntimeException("Expected: create <NAME>");
     }
-    //fix clear
+
     public String clear(){
         server.clear();
         state = State.SIGNEDOUT;
         return "Server cleared successfully.";
     }
-
+    // fix list (list has its own game ID's - map maybe?)
     public String list(){
         ListGameResult result = server.list_games(authToken);
         return String.format(String.valueOf(result));
@@ -111,7 +111,8 @@ public class ChessClient {
             String playerColor = params[1];
             JoinRequest request = new JoinRequest(id, playerColor);
             server.joinGame(request, authToken);
-            return String.format("You have now joined Game: %s", request.gameID());
+            DrawBoard.drawCorrectBoard(request.playerColor());
+            return String.format("You have now joined Game: %s as Team: %s", request.gameID(), request.playerColor());
         }
         throw new RuntimeException("Expected: join <ID> [WHITE|BLACK]");
     }
@@ -119,6 +120,7 @@ public class ChessClient {
     public String observe(String...params){
         if (params.length >= 1){
             int id = Integer.parseInt(params[0]);
+            server.observe(id);
             // watches the game at id
         }
         return null;

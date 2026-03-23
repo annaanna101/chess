@@ -44,13 +44,13 @@ public class DrawBoard {
 
         drawHeaders(out);
 
-        drawChessBoard(out);
+        drawWhiteChessBoard(out);
 
         out.print(SET_BG_COLOR_BLACK);
         out.print(SET_TEXT_COLOR_WHITE);
     }
 
-    private static void drawChessBoard(PrintStream out) {
+    private static void drawWhiteChessBoard(PrintStream out) {
 
         for (int boardRow = 0; boardRow < BOARD_SIZE_IN_SQUARES; ++boardRow) {
 
@@ -58,7 +58,7 @@ public class DrawBoard {
 
             if (boardRow < BOARD_SIZE_IN_SQUARES - 1) {
                 // Draw horizontal row separator.
-                drawHorizontalLine(out);
+//                drawHorizontalLine(out);
                 setBlack(out);
             }
         }

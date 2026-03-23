@@ -121,7 +121,7 @@ public class ServerFacade {
         try {
             // parse JSON if needed
             var jsonObj = new Gson().fromJson(body, Map.class);
-            String msg = jsonObj.getOrDefault("error", "Unknown error").toString();
+            String msg = jsonObj.getOrDefault("message", "Unknown error").toString();
             return new RuntimeException(msg);
         } catch (Exception e) {
             return new RuntimeException("Failed to parse error response: " + body, e);

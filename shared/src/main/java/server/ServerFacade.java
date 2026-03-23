@@ -19,30 +19,29 @@ public class ServerFacade {
     }
 
     public RegisterResult register(RegisterRequest request){
-        var web_request = buildRequest("POST", "/user", request);
+        var web_request = buildRequest("POST", "/user", request, "Content-Type", "application/json");
         var response = sendRequest(web_request);
         return handleResponse(response, RegisterResult.class);
     }
 
     public LoginResult login(LoginRequest request){
-        var web_request = buildRequest("POST", "/session", request);
+        var web_request = buildRequest("POST", "/session", request, "Content-Type", "application/json");
         var response = sendRequest(web_request);
         return handleResponse(response, LoginResult.class);
     }
 
     public void logout (LogoutRequest request){
-        var web_request = buildRequest("DELETE", "/session", request);
+        var web_request = buildRequest("DELETE", "/session", request, "Content-Type", "application/json");
         sendRequest(web_request);
     }
 
     public void clear (){
-        var web_request = buildRequest("DELETE", "/db", null);
+        var web_request = buildRequest("DELETE", "/db", null, "Content-Type", "application/json");
         sendRequest(web_request);
     }
 
     public CreateResult create(CreateRequest request){
-        var web_request = buildRequest("POST", "/game", request);
-        web_request.
+        var web_request = buildRequest("POST", "/game", request, "Authorization", request.authToken());
         var response = sendRequest(web_request);
         return handleResponse(response, CreateResult.class);
     }
@@ -58,12 +57,13 @@ public class ServerFacade {
     }
 
     public void joinGame(JoinRequest request, AuthD authToken){
-        var web_request = HttpRequest.newBuilder()
-                .uri(URI.create(serverUrl + "/game"))
-                .PUT(makeRequestBody(request))
-                .header("Content-Type", "application/json")
-                .header("Authorization", authToken.authToken())
-                .build();;
+        var web_request = buildRequest("POST", "/game", request, "Authorization", authToken.authToken());
+//        var web_request = HttpRequest.newBuilder()
+//                .uri(URI.create(serverUrl + "/game"))
+//                .PUT(makeRequestBody(request))
+//                .header("Content-Type", "application/json")
+//                .header("Authorization", authToken.authToken())
+//                .build();;
         sendRequest(web_request);
     }
 
@@ -77,12 +77,12 @@ public class ServerFacade {
         return handleResponse(response, ChessGame.class);
     }
 
-    private HttpRequest buildRequest(String method, String path, Object body) {
+    private HttpRequest buildRequest(String method, String path, Object body, String contentType, String value) {
         var request = HttpRequest.newBuilder()
                 .uri(URI.create(serverUrl + path))
                 .method(method, makeRequestBody(body));
         if (body != null) {
-            request.setHeader("Content-Type", "application/json");
+            request.setHeader(contentType, value);
         }
         return request.build();
     }

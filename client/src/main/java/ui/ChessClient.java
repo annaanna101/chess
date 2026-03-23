@@ -5,6 +5,10 @@ import model.*;
 import server.ServerFacade;
 
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 //implements NotificationHandler
 public class ChessClient {
     private final ServerFacade server;
@@ -100,6 +104,18 @@ public class ChessClient {
         return "Server cleared successfully.";
     }
     // fix list (list has its own game ID's - map maybe?)
+    public Map<Integer, GameSummary> mapGamesSequentially() {
+        ListGameResult games = server.list_games(authToken);
+        Map<Integer, GameSummary> gameMap = new LinkedHashMap<>(); // preserves insertion order
+
+        int seqId = 1;
+        for (GameSummary game : games) {
+            gameMap.put(seqId, game);
+            seqId++;
+        }
+
+        return gameMap;
+    }
     public String list(){
         ListGameResult result = server.list_games(authToken);
         return String.format(String.valueOf(result));
@@ -118,12 +134,29 @@ public class ChessClient {
     }
 
     public String observe(String...params){
-        if (params.length >= 1){
-            int id = Integer.parseInt(params[0]);
-            server.observe(id);
-            // watches the game at id
+        public String observe(String... params) throws DataAccessException {
+            if (params.length < 1) return "No game ID provided";
+
+            try {
+                int id = Integer.parseInt(params[0]);
+                Map<Integer, GameSummary> gameMap = mapGamesSequentially();
+                GameSummary game = gameMap.get(id);
+
+                if (game == null) {
+                    return "Game not found";
+                }
+
+                // Return info, or call a method to start watching the game
+                return String.format("Game %d: %s vs %s (%s)",
+                        id,
+                        game.getWhiteUsername(),
+                        game.getBlackUsername(),
+                        game.getGameName()
+                );
+            } catch (NumberFormatException e) {
+                return "Invalid game ID";
+            }
         }
-        return null;
     }
 
     public String logout(){

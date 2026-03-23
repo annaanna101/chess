@@ -1,5 +1,6 @@
 package server;
 
+import com.google.gson.Gson;
 import dataaccess.MySqlDataAccess;
 import handler.*;
 import dataaccess.DataAccess;
@@ -43,7 +44,7 @@ public class Server {
 
         javalin.exception(DataAccessException.class, (ex, ctx) -> {
             ctx.status(500);
-            ctx.json(new ErrorResponse(ex.getMessage()));
+            ctx.json(new Gson().toJson(new ErrorResponse(ex.getMessage())));
         });
     }
 

@@ -42,6 +42,7 @@ public class ServerFacade {
 
     public CreateResult create(CreateRequest request){
         var web_request = buildRequest("POST", "/game", request);
+        web_request.
         var response = sendRequest(web_request);
         return handleResponse(response, CreateResult.class);
     }

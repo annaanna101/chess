@@ -39,6 +39,7 @@ public class ChessClient {
                 case "join" -> join(params);
                 case "observe" -> observe();
                 case "logout" -> logout();
+                case "clear" -> clear();
                 case "quit" -> "quit";
                 default -> help();
             };
@@ -91,6 +92,12 @@ public class ChessClient {
             return String.format("Created game: %s", result);
         }
         throw new RuntimeException("Expected: create <NAME>");
+    }
+    //fix clear
+    public String clear(){
+        server.clear();
+        state = State.SIGNEDOUT;
+        return "Server cleared successfully.";
     }
 
     public String list(){

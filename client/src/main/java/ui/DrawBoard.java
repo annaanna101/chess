@@ -11,7 +11,7 @@ public class DrawBoard {
     static final String SET_BG_COLOR = UNICODE_ESCAPE + "[48;5;";
 
     private static final int BOARD_SIZE_IN_SQUARES = 8;
-    private static final int SQUARE_SIZE_IN_PADDED_CHARS = 8;
+    private static final int SQUARE_SIZE_IN_PADDED_CHARS = 1;
     private static final int LINE_WIDTH_IN_PADDED_CHARS = 1;
 
     public static final String SET_BG_COLOR_BLACK = SET_BG_COLOR + "0m";

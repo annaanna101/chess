@@ -69,17 +69,7 @@ public class DrawBoard {
         out.print(" " + displayRow + " ");
 
         for (int col = BOARD_SIZE - 1; col >= 0; col--) {
-            boolean dark = (row + col) % 2 == 0;
-            String piece = getPiece(row, col);
-
-            if (dark) {
-                darkSquare(out);
-            } else {
-                lightSquare(out);
-            }
-
-            setPieceColor(out, piece);
-            out.print(piece);
+            rowHelper(out, row, col);
         }
 
         header(out);
@@ -87,6 +77,20 @@ public class DrawBoard {
 
         reset(out);
         out.println();
+    }
+    private static void rowHelper(PrintStream out, int row, int col) {
+        boolean dark = (row + col) % 2 == 0;
+        String piece = getPiece(row, col);
+
+        if (dark) {
+            darkSquare(out);
+        } else {
+            lightSquare(out);
+        }
+
+        setPieceColor(out, piece);
+        out.print(piece);
+
     }
 
     private static void drawRow(PrintStream out, int row) {
@@ -96,17 +100,7 @@ public class DrawBoard {
         out.print(" " + displayRow + " ");
 
         for (int col = 0; col < BOARD_SIZE; col++) {
-            boolean dark = (row + col) % 2 == 0;
-            String piece = getPiece(row, col);
-
-            if (dark) {
-                darkSquare(out);
-            } else {
-                lightSquare(out);
-            }
-
-            setPieceColor(out, piece);
-            out.print(piece);
+            rowHelper(out, row, col);
         }
         header(out);
         out.print(" " + displayRow + " ");

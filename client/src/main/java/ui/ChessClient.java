@@ -64,7 +64,7 @@ public class ChessClient {
     }
 
     public String register(String... params){
-        if (params.length >= 3) {
+        if (params.length == 3) {
             String username = params[0];
             String password = params[1];
             String email = params[2];
@@ -83,7 +83,7 @@ public class ChessClient {
     }
 
     public String login(String...params){
-        if (params.length >= 2) {
+        if (params.length == 2) {
             String username = params[0];
             String password = params[1];
             LoginRequest request = new LoginRequest(username, password);
@@ -96,7 +96,7 @@ public class ChessClient {
     }
 
     public String create(String...params){
-        if (params.length >= 1){
+        if (params.length == 1){
             String gameName = params[0];
             CreateRequest request = new CreateRequest(gameName, authToken.authToken());
             server.create(request);
@@ -148,10 +148,14 @@ public class ChessClient {
     }
 
     public String join(String...params){
-        if (params.length>= 2){
-            int seqId = Integer.parseInt(params[0]);
+        if (params.length == 2){
+            int seqId;
+            if (params[0].matches("^\\d+$")){
+                seqId = Integer.parseInt(params[0]);
+            } else {
+                return "Invalid game ID. Use Integer";
+            }
             String playerColor = params[1];
-
             GameSummary game = gameMap.get(seqId);
             if (game == null){
                 return "Invalid game ID";
@@ -168,9 +172,18 @@ public class ChessClient {
         if (params.length < 1) {
             return "No game ID provided";
         }
+        if (params.length != 1) {
+            return "Expected: observe [GameID]";
+        }
 
         try {
-            int seqId = Integer.parseInt(params[0]);
+            int seqId;
+            if(params[0].matches("^\\d+$")){
+                seqId = Integer.parseInt(params[0]);
+            } else {
+                return "Invalid game ID. Use Integer";
+            }
+
             GameSummary game = gameMap.get(seqId);
 
             if (game == null) {

@@ -29,7 +29,12 @@ public class PostLoginRepl {
             }
             if (line.startsWith("join") || line.startsWith("observe")){
                 String[] tokens = line.split(" ");
-                int seqId = Integer.parseInt(tokens[1]);
+                int seqId = 0;
+                if(tokens[1].matches("^\\d+$")){
+                    seqId = Integer.parseInt(tokens[1]);
+                } else {
+                    continue;
+                }
                 Integer realGameID = client.getRealGameID(seqId);
                 if (realGameID == null) {
                     System.out.println("Invalid game ID. Make sure to run 'list' first.");

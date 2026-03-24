@@ -30,14 +30,16 @@ public class ServerFacade {
         return handleResponse(response, LoginResult.class);
     }
 
-    public void logout (LogoutRequest request){
-        var web_request = buildRequest("DELETE", "/session", request, "Content-Type", "application/json");
-        sendRequest(web_request);
+    public Object logout (LogoutRequest request){
+        var web_request = buildRequest("DELETE", "/session", request, "Authorization", request.authToken());
+        var response = sendRequest(web_request);
+        return handleResponse(response, null);
     }
 
-    public void clear (){
+    public Object clear (){
         var web_request = buildRequest("DELETE", "/db", null, "Content-Type", "application/json");
-        sendRequest(web_request);
+        var response = sendRequest(web_request);
+        return handleResponse(response, null);
     }
 
     public CreateResult create(CreateRequest request){

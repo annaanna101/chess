@@ -22,7 +22,7 @@ public class ListHandler {
         try {
             String authToken = ctx.header("authorization");
             if (authToken == null || authToken.isBlank()){
-                ctx.status(401).json(new Server.ErrorResponse("Error: missing authToken"));
+                ctx.status(401).json(gson.toJson(new Server.ErrorResponse("Error: missing authToken")));
                 return;
             }
             Collection<GameSummary> result = gameService.listGame(authToken);

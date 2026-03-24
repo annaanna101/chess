@@ -1,6 +1,5 @@
 package ui;
 
-import chess.ChessGame;
 import model.*;
 import server.ServerFacade;
 
@@ -28,6 +27,9 @@ public class ChessClient {
             String[] tokens = input.toLowerCase().split(" ");
             String cmd = (tokens.length > 0) ? tokens[0] : "help";
             String[] params = Arrays.copyOfRange(tokens, 1, tokens.length);
+            if (state == State.SIGNEDIN) {
+                updateList();
+            }
             if (state == State.SIGNEDOUT){
                 return switch (cmd) {
                     case "register" -> register(params);
@@ -94,7 +96,8 @@ public class ChessClient {
     public String create(String...params){
         if (params.length >= 1){
             String gameName = params[0];
-//            CreateRequest request = new CreateRequest(gameName, authToken.authToken());
+            CreateRequest request = new CreateRequest(gameName, authToken.authToken());
+            server.create(request);
             return String.format("Created game: %s", gameName);
         }
         throw new RuntimeException("Expected: create <NAME>");
@@ -108,15 +111,23 @@ public class ChessClient {
 
     private Map<Integer, GameSummary> gameMap = new LinkedHashMap<>();
 
-    public String list() {
+    public void updateList() {
         ListGameResult result = server.list_games(authToken);
 
         gameMap.clear();
-        StringBuilder sb = new StringBuilder();
 
         int i = 1;
         for (GameSummary game : result.games()) {
             gameMap.put(i, game);
+            i++;
+        }
+    }
+
+    public String list() {
+        StringBuilder sb = new StringBuilder();
+
+        int i = 1;
+        for (GameSummary game : gameMap.values()) {
 
             sb.append("Game Name: ")
                     .append(game.gameName())
@@ -177,9 +188,6 @@ public class ChessClient {
         server.logout(request);
         state = State.SIGNEDOUT;
         return "You have been logged out. Goodbye!";
-    }
-    public ChessGame getGame(int gameID){
-        return server.getGame(gameID, authToken);
     }
 
 

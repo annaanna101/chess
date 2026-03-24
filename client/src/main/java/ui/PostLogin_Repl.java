@@ -35,14 +35,16 @@ public class PostLogin_Repl {
                     System.out.println("Invalid game ID. Make sure to run 'list' first.");
                     continue;
                 }
-                if (tokens.length >= 3){
-                    //dont draw the board if an error occurs
-                    String color = tokens[2];
-                    DrawBoard.drawCorrectBoard(color);
-                } else {
-                    String color = tokens[0];
-                    DrawBoard.drawCorrectBoard(color);
+                if (result != null && !result.contains("Error")){
+                    if (tokens.length >= 3){
+                        String color = tokens[2];
+                        DrawBoard.drawCorrectBoard(color);
+                    } else {
+                        String color = tokens[0];
+                        DrawBoard.drawCorrectBoard(color);
+                    }
                 }
+
 //                new GamePlay_Repl(client, realGameID).run();
             }
         }

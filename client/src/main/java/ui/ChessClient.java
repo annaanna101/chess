@@ -5,7 +5,6 @@ import model.*;
 import server.ServerFacade;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -41,7 +40,7 @@ public class ChessClient {
                 case "create" -> create(params);
                 case "list" -> list();
                 case "join" -> join(params);
-                case "observe" -> observe();
+                case "observe" -> observe(params);
                 case "logout" -> logout();
                 case "clear" -> clear();
                 case "quit" -> "quit";
@@ -104,28 +103,52 @@ public class ChessClient {
         return "Server cleared successfully.";
     }
     // fix list (list has its own game ID's - map maybe?)
+    private Map<Integer, GameSummary> gameMap = new LinkedHashMap<>();
     public Map<Integer, GameSummary> mapGamesSequentially() {
-        ListGameResult games = server.list_games(authToken);
-        Map<Integer, GameSummary> gameMap = new LinkedHashMap<>(); // preserves insertion order
+        ListGameResult result = server.list_games(authToken);
+//        Map<Integer, GameSummary> gameMap = new LinkedHashMap<>(); // preserves insertion order
 
         int seqId = 1;
-        for (GameSummary game : games) {
+        for (GameSummary game : result.games()) {
             gameMap.put(seqId, game);
             seqId++;
         }
 
         return gameMap;
     }
-    public String list(){
+    public String list() {
         ListGameResult result = server.list_games(authToken);
-        return String.format(String.valueOf(result));
+
+        gameMap.clear(); // reset mapping
+        StringBuilder sb = new StringBuilder();
+
+        int i = 1;
+        for (GameSummary game : result.games()) {
+            gameMap.put(i, game);
+
+            sb.append("Game Name: ")
+                    .append(game.gameName())
+                    .append("  Game ID: ")
+                    .append(i)
+                    .append("\n");
+
+            i++;
+        }
+
+        return sb.toString();
     }
 
     public String join(String...params){
         if (params.length>= 2){
-            int id = Integer.parseInt(params[0]);
+            int seqId = Integer.parseInt(params[0]);
             String playerColor = params[1];
-            JoinRequest request = new JoinRequest(id, playerColor);
+
+            GameSummary game = gameMap.get(seqId);
+            if (game == null){
+                return "Invalid game ID";
+            }
+            int realGameId = game.gameID();
+            JoinRequest request = new JoinRequest(realGameId, playerColor);
             server.joinGame(request, authToken);
             DrawBoard.drawCorrectBoard(request.playerColor());
             return String.format("You have now joined Game: %s as Team: %s", request.gameID(), request.playerColor());
@@ -133,31 +156,28 @@ public class ChessClient {
         throw new RuntimeException("Expected: join <ID> [WHITE|BLACK]");
     }
 
-    public String observe(String...params){
-        public String observe(String... params) throws DataAccessException {
-            if (params.length < 1) return "No game ID provided";
+//    public String observe(String...params){
+    public String observe(String... params) throws RuntimeException {
+        if (params.length < 1) return "No game ID provided";
 
-            try {
-                int id = Integer.parseInt(params[0]);
-                Map<Integer, GameSummary> gameMap = mapGamesSequentially();
-                GameSummary game = gameMap.get(id);
+        try {
+            int seqId = Integer.parseInt(params[0]);
+            GameSummary game = gameMap.get(seqId);
 
-                if (game == null) {
-                    return "Game not found";
-                }
-
-                // Return info, or call a method to start watching the game
-                return String.format("Game %d: %s vs %s (%s)",
-                        id,
-                        game.getWhiteUsername(),
-                        game.getBlackUsername(),
-                        game.getGameName()
-                );
-            } catch (NumberFormatException e) {
-                return "Invalid game ID";
+            if (game == null) {
+                return "Game not found. Invalid Game ID";
             }
+
+            return String.format("Observing game: %s (%s vs %s)",
+                    seqId,
+                    game.whiteUsername(),
+                    game.blackUsername()
+            );
+        } catch (NumberFormatException e) {
+            return "Invalid game ID";
         }
     }
+//    }
 
     public String logout(){
         LogoutRequest request = new LogoutRequest(authToken.authToken());

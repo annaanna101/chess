@@ -9,11 +9,15 @@ import server.ServerFacade;
 public class ServerFacadeTests {
 
     private static Server server;
+    private static String url;
 
     @BeforeAll
     public static void init() {
         server = new Server();
         var port = server.run(0);
+        url = "http://localhost:" + port;
+        ServerFacade facade = new ServerFacade(url);
+        facade.clear();
         System.out.println("Started test HTTP server on " + port);
     }
 
@@ -25,8 +29,6 @@ public class ServerFacadeTests {
 
     @Test
     public void registerTestPositive() {
-        var port = server.run(0);
-        String url = "http://localhost:" + port;
         ServerFacade facade = new ServerFacade(url);
         RegisterRequest request = new RegisterRequest("an", "an", "an");
         RegisterResult result = facade.register(request);
@@ -35,13 +37,17 @@ public class ServerFacadeTests {
 
     @Test
     public void registerTestNegative() {
-        Assertions.assertTrue(true);
+        ServerFacade facade = new ServerFacade(url);
+        RegisterRequest request = new RegisterRequest("u", "p", "email");
+        facade.register(request);
+
+        Assertions.assertThrows(RuntimeException.class, () ->{
+            facade.register(request);
+        });
     }
 
     @Test
     public void loginTestPositive() {
-        var port = server.run(0);
-        String url = "http://localhost:" + port;
         ServerFacade facade = new ServerFacade(url);
         LoginRequest request = new LoginRequest("an", "an");
         LoginResult result = facade.login(request);
@@ -50,33 +56,42 @@ public class ServerFacadeTests {
 
     @Test
     public void loginTestNegative() {
-        Assertions.assertTrue(true);
+        ServerFacade facade = new ServerFacade(url);
+        LoginRequest badRequest = new LoginRequest("an", "wrong");
+        Assertions.assertThrows(RuntimeException.class, () -> {
+            facade.login(badRequest);
+        });
+
     }
 
     @Test
     public void logoutTestPositive() {
-        var port = server.run(0);
-        String url = "http://localhost:" + port;
         ServerFacade facade = new ServerFacade(url);
         LoginRequest logRequest = new LoginRequest("an", "an");
         LoginResult logResult = facade.login(logRequest);
         String authToken = logResult.authToken();
         LogoutRequest request = new LogoutRequest(authToken);
-        //figure out
-         result = facade.register(request);
-        Assertions.assertEquals("an", result.username());
-    }
-
-    @Test
-    public void logoutTestNegative() {
+        facade.logout(request);
         Assertions.assertTrue(true);
     }
 
     @Test
-    public void createTestPositive() {
-        var port = server.run(0);
-        String url = "http://localhost:" + port;
+    public void logoutTestNegative() {
         ServerFacade facade = new ServerFacade(url);
+        LoginRequest logRequest = new LoginRequest("an", "an");
+        facade.login(logRequest);
+        String authToken = "badToken";
+        LogoutRequest request = new LogoutRequest(authToken);
+        Assertions.assertThrows(RuntimeException.class, () -> {
+            facade.logout(request);
+        });
+    }
+
+    @Test
+    public void createTestPositive() {
+        ServerFacade facade = new ServerFacade(url);
+        RegisterRequest request1 = new RegisterRequest("an", "an", "an");
+        facade.register(request1);
         LoginRequest request = new LoginRequest("an", "an");
         LoginResult result = facade.login(request);
         String authToken = result.authToken();
@@ -87,14 +102,22 @@ public class ServerFacadeTests {
 
     @Test
     public void createTestNegative() {
-        Assertions.assertTrue(true);
+        ServerFacade facade = new ServerFacade(url);
+        RegisterRequest request1 = new RegisterRequest("an", "an", "an");
+        facade.register(request1);
+        LoginRequest request = new LoginRequest("an", "an");
+        facade.login(request);
+        CreateRequest createRequest = new CreateRequest("game", null);
+        Assertions.assertThrows(RuntimeException.class, () -> {
+            facade.create(createRequest);
+        });
     }
 
     @Test
     public void listTestPositive() {
-        var port = server.run(0);
-        String url = "http://localhost:" + port;
         ServerFacade facade = new ServerFacade(url);
+        RegisterRequest request1 = new RegisterRequest("an", "an", "an");
+        facade.register(request1);
         LoginRequest request = new LoginRequest("an", "an");
         LoginResult result = facade.login(request);
         AuthD authToken = new AuthD(result.authToken(), "an");
@@ -104,25 +127,46 @@ public class ServerFacadeTests {
 
     @Test
     public void listTestNegative() {
-        Assertions.assertTrue(true);
+        ServerFacade facade = new ServerFacade(url);
+        RegisterRequest request1 = new RegisterRequest("an", "an", "an");
+        facade.register(request1);
+        LoginRequest request = new LoginRequest("an", "an");
+        facade.login(request);
+        AuthD authToken = new AuthD("badToken", "an");
+        Assertions.assertThrows(RuntimeException.class, () -> {
+            facade.list_games(authToken);
+        });
     }
 
     @Test
     public void joinTestPositive() {
-        var port = server.run(0);
-        String url = "http://localhost:" + port;
         ServerFacade facade = new ServerFacade(url);
+        RegisterRequest request1 = new RegisterRequest("an", "an", "an");
+        facade.register(request1);
         LoginRequest request = new LoginRequest("an", "an");
         LoginResult result = facade.login(request);
-        AuthD authToken = new AuthD(result.authToken(), "an");
-        JoinRequest joinRequest = new JoinRequest(1,"WHITE");
+        AuthD authToken = new AuthD(result.authToken(), result.username());
+        CreateRequest createRequest = new CreateRequest("anna_game", authToken.authToken());
+        CreateResult createResult = facade.create(createRequest);
+        JoinRequest joinRequest = new JoinRequest(createResult.gameID(),"BLACK");
         facade.joinGame(joinRequest, authToken);
-        Assertions.assertEquals("an", result.username());
+        Assertions.assertTrue(true);
     }
 
     @Test
     public void joinTestNegative() {
-        Assertions.assertTrue(true);
+        ServerFacade facade = new ServerFacade(url);
+        RegisterRequest request1 = new RegisterRequest("an", "an", "an");
+        facade.register(request1);
+        LoginRequest request = new LoginRequest("an", "an");
+        LoginResult result = facade.login(request);
+        AuthD authToken = new AuthD(result.authToken(), result.username());
+        CreateRequest createRequest = new CreateRequest("anna_game", authToken.authToken());
+        facade.create(createRequest);
+        JoinRequest joinRequest = new JoinRequest(1234,"BLACK");
+        Assertions.assertThrows(RuntimeException.class, () -> {
+            facade.joinGame(joinRequest, authToken);
+        });
     }
 
 

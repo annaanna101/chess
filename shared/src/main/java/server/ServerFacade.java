@@ -67,16 +67,6 @@ public class ServerFacade {
         return handleResponse(response, null);
     }
 
-    public ChessGame getGame(int gameID, AuthD authToken){
-        var request = HttpRequest.newBuilder()
-                .uri(URI.create(serverUrl + "/game/" + gameID))
-                .GET()
-                .header("Authorization", authToken.authToken()) // IMPORTANT
-                .build();
-        var response = sendRequest(request);
-        return handleResponse(response, ChessGame.class);
-    }
-
     private HttpRequest buildRequest(String method, String path, Object body, String contentType, String value) {
         var request = HttpRequest.newBuilder()
                 .uri(URI.create(serverUrl + path))

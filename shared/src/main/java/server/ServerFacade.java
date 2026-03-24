@@ -56,15 +56,15 @@ public class ServerFacade {
         return handleResponse(response, ListGameResult.class);
     }
 
-    public void joinGame(JoinRequest request, AuthD authToken){
-        var web_request = buildRequest("POST", "/game", request, "Authorization", authToken.authToken());
-//        var web_request = HttpRequest.newBuilder()
-//                .uri(URI.create(serverUrl + "/game"))
-//                .PUT(makeRequestBody(request))
-//                .header("Content-Type", "application/json")
-//                .header("Authorization", authToken.authToken())
-//                .build();;
-        sendRequest(web_request);
+    public Object joinGame(JoinRequest request, AuthD authToken){
+        var web_request = HttpRequest.newBuilder()
+                .uri(URI.create(serverUrl + "/game"))
+                .PUT(makeRequestBody(request))
+                .header("Content-Type", "application/json")
+                .header("Authorization", authToken.authToken())
+                .build();;
+        var response = sendRequest(web_request);
+        return handleResponse(response, null);
     }
 
     public ChessGame getGame(int gameID, AuthD authToken){

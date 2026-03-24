@@ -13,14 +13,8 @@ public class GamePlay_Repl {
     }
 
     public void run(){
-        ChessGame game = client.getGame(gameID);
-        drawBoard(game.getBoard());
+        ChessGame game = new ChessGame();
+
     }
 
-    private void drawBoard(ChessBoard board) {
-    }
-
-    private String flipBoard(){
-        return  null;
-    }
 }

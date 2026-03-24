@@ -6,6 +6,7 @@ import server.ServerFacade;
 
 import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.Locale;
 import java.util.Map;
 
 //implements NotificationHandler
@@ -52,6 +53,12 @@ public class ChessClient {
         }
     }
 
+    public Integer getRealGameID(int seqId) {
+        GameSummary game = gameMap.get(seqId);
+        if (game == null) return null;
+        return game.gameID();
+    }
+
     public String register(String... params){
         if (params.length >= 3) {
             String username = params[0];
@@ -60,9 +67,6 @@ public class ChessClient {
             try {
                 RegisterRequest request = new RegisterRequest(username, password, email);
                 RegisterResult result = server.register(request);
-                if (result == null || result.authToken() == null) {
-                    return "Registration failed: server returned null or invalid response.";
-                }
                 this.authToken = new AuthD(result.authToken(), result.username());
                 state = State.SIGNEDIN;
                 return String.format("Successful Registration. Your Username is: %s", result.username());
@@ -90,9 +94,8 @@ public class ChessClient {
     public String create(String...params){
         if (params.length >= 1){
             String gameName = params[0];
-            CreateRequest request = new CreateRequest(gameName, authToken.authToken());
-            CreateResult result = server.create(request);
-            return String.format("Created game: %s", result);
+//            CreateRequest request = new CreateRequest(gameName, authToken.authToken());
+            return String.format("Created game: %s", gameName);
         }
         throw new RuntimeException("Expected: create <NAME>");
     }
@@ -102,24 +105,13 @@ public class ChessClient {
         state = State.SIGNEDOUT;
         return "Server cleared successfully.";
     }
-    // fix list (list has its own game ID's - map maybe?)
+
     private Map<Integer, GameSummary> gameMap = new LinkedHashMap<>();
-    public Map<Integer, GameSummary> mapGamesSequentially() {
-        ListGameResult result = server.list_games(authToken);
-//        Map<Integer, GameSummary> gameMap = new LinkedHashMap<>(); // preserves insertion order
 
-        int seqId = 1;
-        for (GameSummary game : result.games()) {
-            gameMap.put(seqId, game);
-            seqId++;
-        }
-
-        return gameMap;
-    }
     public String list() {
         ListGameResult result = server.list_games(authToken);
 
-        gameMap.clear(); // reset mapping
+        gameMap.clear();
         StringBuilder sb = new StringBuilder();
 
         int i = 1;
@@ -130,6 +122,10 @@ public class ChessClient {
                     .append(game.gameName())
                     .append("  Game ID: ")
                     .append(i)
+                    .append("  White Player: ")
+                    .append(game.whiteUsername())
+                    .append("  Black Player: ")
+                    .append(game.blackUsername())
                     .append("\n");
 
             i++;
@@ -148,15 +144,13 @@ public class ChessClient {
                 return "Invalid game ID";
             }
             int realGameId = game.gameID();
-            JoinRequest request = new JoinRequest(realGameId, playerColor);
+            JoinRequest request = new JoinRequest(realGameId, playerColor.toUpperCase());
             server.joinGame(request, authToken);
-            DrawBoard.drawCorrectBoard(request.playerColor());
-            return String.format("You have now joined Game: %s as Team: %s", request.gameID(), request.playerColor());
+            return String.format("You have now joined Game: %s as Team: %s", seqId, request.playerColor().toUpperCase(Locale.ROOT));
         }
         throw new RuntimeException("Expected: join <ID> [WHITE|BLACK]");
     }
 
-//    public String observe(String...params){
     public String observe(String... params) throws RuntimeException {
         if (params.length < 1) return "No game ID provided";
 
@@ -177,7 +171,6 @@ public class ChessClient {
             return "Invalid game ID";
         }
     }
-//    }
 
     public String logout(){
         LogoutRequest request = new LogoutRequest(authToken.authToken());

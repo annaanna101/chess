@@ -29,8 +29,21 @@ public class PostLogin_Repl {
             }
             if (line.startsWith("join") || line.startsWith("observe")){
                 String[] tokens = line.split(" ");
-                int gameId = Integer.parseInt(tokens[1]);
-                new GamePlay_Repl(client, gameId).run();
+                int seqId = Integer.parseInt(tokens[1]);
+                Integer realGameID = client.getRealGameID(seqId);
+                if (realGameID == null) {
+                    System.out.println("Invalid game ID. Make sure to run 'list' first.");
+                    continue;
+                }
+                if (tokens.length >= 3){
+                    //dont draw the board if an error occurs
+                    String color = tokens[2];
+                    DrawBoard.drawCorrectBoard(color);
+                } else {
+                    String color = tokens[0];
+                    DrawBoard.drawCorrectBoard(color);
+                }
+//                new GamePlay_Repl(client, realGameID).run();
             }
         }
     }

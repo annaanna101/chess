@@ -2,10 +2,10 @@ package ui;
 
 import java.util.Scanner;
 
-public class PostLogin_Repl {
+public class PostLoginRepl {
     private final ChessClient client;
 
-    public PostLogin_Repl(ChessClient client){
+    public PostLoginRepl(ChessClient client){
         this.client = client;
     }
 

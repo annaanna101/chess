@@ -1,6 +1,5 @@
 package server;
 
-import chess.ChessGame;
 import com.google.gson.Gson;
 import model.*;
 
@@ -19,53 +18,53 @@ public class ServerFacade {
     }
 
     public RegisterResult register(RegisterRequest request){
-        var web_request = buildRequest("POST", "/user", request, "Content-Type", "application/json");
-        var response = sendRequest(web_request);
+        var webRequest = buildRequest("POST", "/user", request, "Content-Type", "application/json");
+        var response = sendRequest(webRequest);
         return handleResponse(response, RegisterResult.class);
     }
 
     public LoginResult login(LoginRequest request){
-        var web_request = buildRequest("POST", "/session", request, "Content-Type", "application/json");
-        var response = sendRequest(web_request);
+        var webRequest = buildRequest("POST", "/session", request, "Content-Type", "application/json");
+        var response = sendRequest(webRequest);
         return handleResponse(response, LoginResult.class);
     }
 
     public Object logout (LogoutRequest request){
-        var web_request = buildRequest("DELETE", "/session", request, "Authorization", request.authToken());
-        var response = sendRequest(web_request);
+        var webRequest = buildRequest("DELETE", "/session", request, "Authorization", request.authToken());
+        var response = sendRequest(webRequest);
         return handleResponse(response, null);
     }
 
     public Object clear (){
-        var web_request = buildRequest("DELETE", "/db", null, "Content-Type", "application/json");
-        var response = sendRequest(web_request);
+        var webRequest = buildRequest("DELETE", "/db", null, "Content-Type", "application/json");
+        var response = sendRequest(webRequest);
         return handleResponse(response, null);
     }
 
     public CreateResult create(CreateRequest request){
-        var web_request = buildRequest("POST", "/game", request, "Authorization", request.authToken());
-        var response = sendRequest(web_request);
+        var webRequest = buildRequest("POST", "/game", request, "Authorization", request.authToken());
+        var response = sendRequest(webRequest);
         return handleResponse(response, CreateResult.class);
     }
 
-    public ListGameResult list_games(AuthD authToken){
-        var web_request = HttpRequest.newBuilder()
+    public ListGameResult listGames(AuthD authToken){
+        var webRequest = HttpRequest.newBuilder()
                 .uri(URI.create(serverUrl + "/game"))
                 .GET()
                 .header("Authorization", authToken.authToken())
                 .build();
-        var response = sendRequest(web_request);
+        var response = sendRequest(webRequest);
         return handleResponse(response, ListGameResult.class);
     }
 
     public Object joinGame(JoinRequest request, AuthD authToken){
-        var web_request = HttpRequest.newBuilder()
+        var webRequest = HttpRequest.newBuilder()
                 .uri(URI.create(serverUrl + "/game"))
                 .PUT(makeRequestBody(request))
                 .header("Content-Type", "application/json")
                 .header("Authorization", authToken.authToken())
                 .build();;
-        var response = sendRequest(web_request);
+        var response = sendRequest(webRequest);
         return handleResponse(response, null);
     }
 
@@ -97,7 +96,7 @@ public class ServerFacade {
         if (!isSuccessful(status)) {
             String body = response.body();
             if (body != null) {
-                throw RuntimeExceptionFromJson(body);
+                throw runtimeExceptionFromJson(body);
             }
 
             throw new RuntimeException("other failure: " + status);
@@ -110,9 +109,8 @@ public class ServerFacade {
         return null;
     }
 
-    private RuntimeException RuntimeExceptionFromJson(String body) {
+    private RuntimeException runtimeExceptionFromJson(String body) {
         try {
-            // parse JSON if needed
             var jsonObj = new Gson().fromJson(body, Map.class);
             String msg = jsonObj.getOrDefault("message", "Unknown error").toString();
             return new RuntimeException(msg);

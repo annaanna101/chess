@@ -57,7 +57,9 @@ public class ChessClient {
 
     public Integer getRealGameID(int seqId) {
         GameSummary game = gameMap.get(seqId);
-        if (game == null) return null;
+        if (game == null) {
+            return null;
+        }
         return game.gameID();
     }
 
@@ -112,7 +114,7 @@ public class ChessClient {
     private Map<Integer, GameSummary> gameMap = new LinkedHashMap<>();
 
     public void updateList() {
-        ListGameResult result = server.list_games(authToken);
+        ListGameResult result = server.listGames(authToken);
 
         gameMap.clear();
 
@@ -163,7 +165,9 @@ public class ChessClient {
     }
 
     public String observe(String... params) throws RuntimeException {
-        if (params.length < 1) return "No game ID provided";
+        if (params.length < 1) {
+            return "No game ID provided";
+        }
 
         try {
             int seqId = Integer.parseInt(params[0]);

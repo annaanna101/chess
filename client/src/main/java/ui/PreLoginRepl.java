@@ -2,10 +2,10 @@ package ui;
 
 import java.util.Scanner;
 
-public class PreLogin_Repl {
+public class PreLoginRepl {
     private final ChessClient client;
 
-    public PreLogin_Repl(String serverUrl){
+    public PreLoginRepl(String serverUrl){
         client = new ChessClient(serverUrl);
     }
 
@@ -27,7 +27,7 @@ public class PreLogin_Repl {
                 System.out.print(result);
             }
             if (client.getState() == State.SIGNEDIN){
-                new PostLogin_Repl(client).run();
+                new PostLoginRepl(client).run();
                 System.out.print(client.help());
             }
         }

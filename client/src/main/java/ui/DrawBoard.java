@@ -147,32 +147,42 @@ public class DrawBoard {
     }
 
     private static String getPiece(int row, int col) {
-        if (row == 0) return switch (col) {
-            case 0, 7 -> BLACK_ROOK;
-            case 1, 6 -> BLACK_KNIGHT;
-            case 2, 5 -> BLACK_BISHOP;
-            case 3 -> BLACK_QUEEN;
-            case 4 -> BLACK_KING;
-            default -> EMPTY;
-        };
+        if (row == 0){
+            return switch (col) {
+                case 0, 7 -> BLACK_ROOK;
+                case 1, 6 -> BLACK_KNIGHT;
+                case 2, 5 -> BLACK_BISHOP;
+                case 3 -> BLACK_QUEEN;
+                case 4 -> BLACK_KING;
+                default -> EMPTY;
+            };
+        }
 
-        if (row == 1) return BLACK_PAWN;
+        if (row == 1) {
+            return BLACK_PAWN;
+        }
 
-        if (row == 6) return WHITE_PAWN;
-
-        if (row == 7) return switch (col) {
-            case 0, 7 -> WHITE_ROOK;
-            case 1, 6 -> WHITE_KNIGHT;
-            case 2, 5 -> WHITE_BISHOP;
-            case 3 -> WHITE_QUEEN;
-            case 4 -> WHITE_KING;
-            default -> EMPTY;
-        };
+        if (row == 6) {
+            return WHITE_PAWN;
+        }
+//
+        if (row == 7){
+            return switch (col) {
+                case 0, 7 -> WHITE_ROOK;
+                case 1, 6 -> WHITE_KNIGHT;
+                case 2, 5 -> WHITE_BISHOP;
+                case 3 -> WHITE_QUEEN;
+                case 4 -> WHITE_KING;
+                default -> EMPTY;
+            };
+        }
 
         return EMPTY;
     }
     private static void setPieceColor(PrintStream out, String piece) {
-        if (piece.equals(EMPTY)) return;
+        if (piece.equals(EMPTY)) {
+            return;
+        }
         if (Character.isUpperCase(piece.trim().charAt(0))) {
             out.print(SET_TEXT_COLOR_WHITE);
         } else {

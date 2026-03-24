@@ -143,7 +143,7 @@ public class ServerFacadeTests {
         LoginRequest request = new LoginRequest("an", "an");
         LoginResult result = facade.login(request);
         AuthD authToken = new AuthD(result.authToken(), "an");
-        ListGameResult listGameResult = facade.list_games(authToken);
+        ListGameResult listGameResult = facade.listGames(authToken);
         Assertions.assertTrue(listGameResult.games().isEmpty());
     }
 
@@ -156,7 +156,7 @@ public class ServerFacadeTests {
         facade.login(request);
         AuthD authToken = new AuthD("badToken", "an");
         Assertions.assertThrows(RuntimeException.class, () -> {
-            facade.list_games(authToken);
+            facade.listGames(authToken);
         });
     }
 

@@ -29,7 +29,7 @@ public class PostLoginRepl {
             }
             if (line.startsWith("join") || line.startsWith("observe")){
                 String[] tokens = line.split(" ");
-                int seqId = 0;
+                int seqId;
                 if(tokens[1].matches("^\\d+$")){
                     seqId = Integer.parseInt(tokens[1]);
                 } else {
@@ -49,8 +49,7 @@ public class PostLoginRepl {
                         DrawBoard.drawCorrectBoard(color);
                     }
                 }
-
-//                new GamePlay_Repl(client, realGameID).run();
+                new GamePlay_Repl(client, realGameID).run();
             }
         }
     }

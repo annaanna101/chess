@@ -13,6 +13,7 @@ public class ChessClient {
     private final ServerFacade server;
     private State state = State.SIGNEDOUT;
     private AuthD authToken;
+    private GamePlayState gameState = GamePlayState.NOGAMEPLAY;
 
     public ChessClient(String serverUrl) {
         server = new ServerFacade(serverUrl);
@@ -39,6 +40,17 @@ public class ChessClient {
                 };
             }
 
+            if (gameState != GamePlayState.NOGAMEPLAY){
+                return switch (cmd) {
+                    case "Redraw Chess Board" -> redraw(params);
+                    case "Leave" -> leave(params);
+                    case "Make Move" -> makeMove(params);
+                    case "Resign" -> resign(params);
+                    case "Highlight Legal Moves" -> highlight(params);
+                    default ->  help();
+                };
+            }
+
             return switch (cmd) {
                 case "create" -> create(params);
                 case "list" -> list();
@@ -53,6 +65,31 @@ public class ChessClient {
         } catch (Exception ex) {
             return ex.getMessage();
         }
+    }
+
+    private String highlight(String[] params) {
+    }
+
+    private String resign(String[] params) {
+        if (gameState == GamePlayState.OBSERVING){
+            return "Error: You cannot resign when observing a game.";
+        }
+    }
+
+    private String makeMove(String[] params) {
+        if (gameState == GamePlayState.OBSERVING){
+            return "Error: You cannot make a move when observing a game.";
+        }
+    }
+
+    private String leave(String[] params) {
+        //do stuff
+
+        gameState = GamePlayState.NOGAMEPLAY;
+    }
+
+    private String redraw(String[] params) {
+        return null;
     }
 
     public Integer getRealGameID(int seqId) {
@@ -163,6 +200,7 @@ public class ChessClient {
             int realGameId = game.gameID();
             JoinRequest request = new JoinRequest(realGameId, playerColor.toUpperCase());
             server.joinGame(request, authToken);
+            gameState = GamePlayState.PLAYING;
             return String.format("You have now joined Game: %s as Team: %s", seqId, request.playerColor().toUpperCase(Locale.ROOT));
         }
         throw new RuntimeException("Expected: join <ID> [WHITE|BLACK]");
@@ -189,8 +227,8 @@ public class ChessClient {
             if (game == null) {
                 return "Game not found. Invalid Game ID";
             }
-
-            return String.format("Observing game: %s (%s vs %s)",
+            gameState = GamePlayState.OBSERVING;
+            return String.format("Observing game: %s (%s (white) vs %s (black))",
                     seqId,
                     game.whiteUsername(),
                     game.blackUsername()
@@ -215,6 +253,16 @@ public class ChessClient {
                     login <USERNAME> <PASSWORD> - to play chess
                     quit - playing chess
                     help - with possible commands
+                    """;
+        }
+        if (gameState != GamePlayState.NOGAMEPLAY){
+            return """
+                    Redraw - Redraws the chess board
+                    Leave - Removes the user from the game
+                    Make move - Allows the user to make a move
+                    Resign - The user forfeits the game and the game is over
+                    Highlight Legal Moves - Highlights all legal moves
+                    help - with possible game play commands
                     """;
         }
         return """

@@ -111,8 +111,9 @@ public class ServerFacade {
 
     private RuntimeException runtimeExceptionFromJson(String body) {
         try {
-            var jsonObj = new Gson().fromJson(body, Map.class);
-            String msg = jsonObj.getOrDefault("message", "Unknown error").toString();
+            var jObject = new Gson().fromJson(body, Map.class);
+            String msg;
+            msg = jObject.getOrDefault("message", "Unknown error").toString();
             return new RuntimeException(msg);
         } catch (Exception e) {
             return new RuntimeException("Failed to parse error response: " + body, e);

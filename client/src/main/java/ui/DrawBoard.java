@@ -16,7 +16,12 @@ public class DrawBoard {
     public static final String SET_BG_COLOR_LIGHT_GREY = SET_BG_COLOR + "242m";
     public static final String SET_TEXT_COLOR_WHITE = SET_TEXT_COLOR + "15m";
     public static final String SET_TEXT_COLOR_BLACK = SET_TEXT_COLOR + "0m";
-    public static final String SET_TEXT_COLOR_DARK_GREY = SET_TEXT_COLOR + "235m";
+    public static final String SET_TEXT_COLOR_DARK_GREEN = SET_TEXT_COLOR + "22m";
+    public static final String SET_BG_COLOR_GREEN = SET_BG_COLOR + "46m";
+    public static final String SET_BG_COLOR_DARK_GREEN = SET_BG_COLOR + "22m";
+
+    public static final String SET_TEXT_COLOR_BEIGE = SET_TEXT_COLOR + "222m";
+    public static final String SET_BG_COLOR_BEIGE = SET_BG_COLOR + "115m";
 
     public static final String EMPTY = "   ";
 
@@ -33,6 +38,10 @@ public class DrawBoard {
     public static final String BLACK_KNIGHT = " n ";
     public static final String BLACK_ROOK = " r ";
     public static final String BLACK_PAWN = " p ";
+
+    static void main(){
+        drawCorrectBoard("WHITE");
+    }
 
     static void drawCorrectBoard(String color) {
         var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
@@ -181,18 +190,18 @@ public class DrawBoard {
         if (Character.isUpperCase(piece.trim().charAt(0))) {
             out.print(SET_TEXT_COLOR_WHITE);
         } else {
-            out.print(SET_TEXT_COLOR_GREEN);
+            out.print(SET_TEXT_COLOR_BLACK);
         }
     }
 
     private static void darkSquare(PrintStream out) {
-        out.print(SET_BG_COLOR_DARK_GREY);
-        out.print(SET_TEXT_COLOR_DARK_GREY);
+        out.print(SET_BG_COLOR_DARK_GREEN);
+        out.print(SET_TEXT_COLOR_DARK_GREEN);
     }
 
     private static void lightSquare(PrintStream out) {
-        out.print(SET_BG_COLOR_LIGHT_GREY);
-        out.print(SET_TEXT_COLOR_BLACK);
+        out.print(SET_BG_COLOR_BEIGE);
+        out.print(SET_TEXT_COLOR_BEIGE);
     }
 
     private static void header(PrintStream out) {

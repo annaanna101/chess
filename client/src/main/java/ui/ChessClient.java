@@ -1,21 +1,27 @@
 package ui;
 
+import client.websocket.NotificationHandler;
+import client.websocket.WebSocketFacade;
 import model.*;
 import server.ServerFacade;
+import websocket.messages.NotificationMessage;
 
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 
-//implements NotificationHandler
-public class ChessClient {
+public class ChessClient implements NotificationHandler {
     private final ServerFacade server;
+    private String clientName = null;
     private State state = State.SIGNEDOUT;
     private AuthD authToken;
+    private final WebSocketFacade ws;
+
     private GamePlayState gameState = GamePlayState.NOGAMEPLAY;
 
-    public ChessClient(String serverUrl) {
+    public ChessClient(String serverUrl) throws ResponseException {
+        ws = new WebSocketFacade(serverUrl, this);
         server = new ServerFacade(serverUrl);
     }
 
@@ -67,25 +73,34 @@ public class ChessClient {
         }
     }
 
+    public void notify(NotificationMessage notification){
+        System.out.println(notification.message());
+        System.out.println(">>> ");
+    }
+
     private String highlight(String[] params) {
+        return null;
     }
 
     private String resign(String[] params) {
         if (gameState == GamePlayState.OBSERVING){
             return "Error: You cannot resign when observing a game.";
         }
+        return null;
     }
 
     private String makeMove(String[] params) {
         if (gameState == GamePlayState.OBSERVING){
             return "Error: You cannot make a move when observing a game.";
         }
+        return null;
     }
 
     private String leave(String[] params) {
         //do stuff
 
         gameState = GamePlayState.NOGAMEPLAY;
+        return null;
     }
 
     private String redraw(String[] params) {
@@ -127,6 +142,7 @@ public class ChessClient {
             LoginResult result = server.login(request);
             this.authToken = new AuthD(result.authToken(), result.username());
             state = State.SIGNEDIN;
+            clientName = String.join("-", username);
             return String.format("You are successfully logged in as %s", username);
         }
         throw new RuntimeException("Expected: login <USERNAME> <PASSWORD>");
@@ -201,6 +217,7 @@ public class ChessClient {
             JoinRequest request = new JoinRequest(realGameId, playerColor.toUpperCase());
             server.joinGame(request, authToken);
             gameState = GamePlayState.PLAYING;
+            ws.joinedGame(clientName);
             return String.format("You have now joined Game: %s as Team: %s", seqId, request.playerColor().toUpperCase(Locale.ROOT));
         }
         throw new RuntimeException("Expected: join <ID> [WHITE|BLACK]");
@@ -228,6 +245,7 @@ public class ChessClient {
                 return "Game not found. Invalid Game ID";
             }
             gameState = GamePlayState.OBSERVING;
+            ws.joinedGame(clientName);
             return String.format("Observing game: %s (%s (white) vs %s (black))",
                     seqId,
                     game.whiteUsername(),

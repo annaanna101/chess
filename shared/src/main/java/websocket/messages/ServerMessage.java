@@ -12,8 +12,15 @@ public class ServerMessage {
     ServerMessageType serverMessageType;
 
     public enum ServerMessageType {
+        //Required fields: game (can be any type, just needs to be called game).
+        //Used by the server to send the current game state to a client.
+        //When a client receives this message, it will redraw the chess board.
         LOAD_GAME,
+        // RQ; String errorMessage. This message is sent to a client when it sends an invalid command.
+        // The message must include the word Error.
         ERROR,
+        //RQ; String message
+        //This is a message meant to inform a player when another player made an action.
         NOTIFICATION
     }
 

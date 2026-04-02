@@ -6,6 +6,7 @@ import handler.*;
 import dataaccess.DataAccess;
 import dataaccess.DataAccessException;
 import io.javalin.*;
+import server.websocket.WebSocketHandler;
 import service.GameService;
 import service.UserService;
 
@@ -14,13 +15,13 @@ public class Server {
     private final Javalin javalin;
 
     public Server() {
-//        DataAccess dataAccess = new MemoryDataAccess();
         DataAccess dataAccess;
         try {
             dataAccess = new MySqlDataAccess();
         } catch (DataAccessException e) {
             throw new RuntimeException(e);
         }
+        final WebSocketHandler webSocketHandler;
         UserService userService = new UserService(dataAccess);
         GameService gameService = new GameService(dataAccess);
         HandlerHelper helper = new HandlerHelper();

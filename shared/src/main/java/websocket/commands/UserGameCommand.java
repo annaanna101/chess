@@ -23,9 +23,13 @@ public class UserGameCommand {
     }
 
     public enum CommandType {
+        //Used for a user to make a WebSocket connection as a player or observer.
         CONNECT,
+        //Used to request to make a move in a game. Required additional fields: ChessMove move
         MAKE_MOVE,
+        //Tells the server you are leaving the game so it will stop sending you notifications.
         LEAVE,
+        //Forfeits the match and ends the game (no more moves can be made).
         RESIGN
     }
 

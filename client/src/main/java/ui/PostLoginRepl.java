@@ -49,7 +49,7 @@ public class PostLoginRepl {
                         DrawBoard.drawCorrectBoard(color);
                     }
                 }
-                new GamePlay_Repl(client, realGameID).run();
+                new GamePlayRepl(client, realGameID).run();
             }
         }
     }

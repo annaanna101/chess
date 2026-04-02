@@ -9,8 +9,12 @@ import io.javalin.websocket.WsConnectHandler;
 import io.javalin.websocket.WsMessageContext;
 import io.javalin.websocket.WsMessageHandler;
 import org.eclipse.jetty.websocket.api.Session;
+import org.jetbrains.annotations.NotNull;
 import webSocketMessages.Action;
 import webSocketMessages.Notification;
+import websocket.commands.MakeMoveCommand;
+import websocket.commands.UserGameCommand;
+import websocket.messages.ErrorMessage;
 import websocket.messages.LoadGameMessage;
 import websocket.messages.NotificationMessage;
 
@@ -27,22 +31,61 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     }
 
     @Override
-    public void handleMessage(WsMessageContext ctx) {
+    public void handleMessage(@NotNull WsMessageContext wsMessageContext) throws Exception {
+//        try {
+//            LoadGameMessage action = new Gson().fromJson(ctx.message(), LoadGameMessage.class);
+//            String teamColor;
+//            if (action.visitorName().equals(action.game().getWhiteUsername())){
+//                teamColor = "WHITE";
+//            } else {
+//                teamColor = "BLACK";
+//            }
+//            switch (action.type()) {
+//                case CONNECT -> connect(action.visitorName(), ctx.session, teamColor, action.game().getGameID());
+//                case MAKE_MOVE -> makeMove(action.visitorName(), ctx.session);
+//            }
+//        } catch (IOException ex) {
+//            ex.printStackTrace();
+//        }
+        int gameId = -1;
+        Session session = wsMessageContext.session;
+
         try {
-            LoadGameMessage action = new Gson().fromJson(ctx.message(), LoadGameMessage.class);
-            String teamColor;
-            if (action.visitorName().equals(action.game().getWhiteUsername())){
-                teamColor = "WHITE";
-            } else {
-                teamColor = "BLACK";
+            UserGameCommand command = Serializer.fromJson(
+                    wsMessageContext.message(), UserGameCommand.class);
+            gameId = command.getGameID();
+            String username = getUsername(command.getAuthToken());
+            saveSession(gameId, session);
+
+            switch (command.getCommandType()) {
+                case CONNECT -> connect(session, username, (ConnectCommand) command);
+                case MAKE_MOVE -> makeMove(session, username, (MakeMoveCommand) command);
+                case LEAVE -> leaveGame(session, username, (LeaveGameCommand) command);
+                case RESIGN -> resign(session, username, (ResignCommand) command);
             }
-            switch (action.type()) {
-                case CONNECT -> connect(action.visitorName(), ctx.session, teamColor, action.game().getGameID());
-                case MAKE_MOVE -> makeMove(action.visitorName(), ctx.session);
-            }
-        } catch (IOException ex) {
+        } catch (UnauthorizedException ex) {
+            sendMessage(session, gameId, new ErrorMessage("Error: unauthorized"));
+        } catch (Exception ex) {
             ex.printStackTrace();
+            sendMessage(session, gameId, new ErrorMessage("Error: " + ex.getMessage()));
         }
+
+    }
+
+    private void sendMessage(Session session, int gameId, ErrorMessage errorMessage) {
+
+    }
+
+    private void resign(Session session, String username, ResignCommand command) {
+    }
+
+    private void saveSession(int gameId, Session session) {
+    }
+
+    private String getUsername(String authToken) {
+    }
+
+    private void leaveGame(Session session, String username, LeaveGameCommand command) {
     }
 
     @Override

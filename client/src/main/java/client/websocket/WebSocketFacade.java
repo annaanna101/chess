@@ -3,6 +3,7 @@ package client.websocket;
 import com.google.gson.Gson;
 import exception.ResponseException;
 import model.GameD;
+import model.GameSummary;
 import webSocketMessages.Action;
 import webSocketMessages.Notification;
 
@@ -13,6 +14,7 @@ import websocket.messages.NotificationMessage;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Map;
 
 //need to extend Endpoint for websocket to work properly
 public class WebSocketFacade extends Endpoint {
@@ -48,8 +50,9 @@ public class WebSocketFacade extends Endpoint {
     public void onOpen(Session session, EndpointConfig endpointConfig) {
     }
 
-    public void joinedGame(String visitorName, GameD game) throws ResponseException{
+    public void joinedGame(String visitorName, GameSummary game) throws ResponseException{
         try {
+            //case CONNECT -> connect(session, username, (ConnectCommand) command);
             var action = new LoadGameMessage(LoadGameMessage.Type.CONNECT, visitorName, game);
             this.session.getBasicRemote().sendText(new Gson().toJson(action));
         } catch (IOException ex) {
@@ -57,14 +60,46 @@ public class WebSocketFacade extends Endpoint {
         }
     }
 
-    public void leavePetShop(String visitorName) throws ResponseException {
+    public void makeMove(String visitorName, GameSummary game) throws ResponseException{
         try {
-            var action = new Action(Action.Type.EXIT, visitorName);
+            //make move command
+            var action = new LoadGameMessage(LoadGameMessage.Type.CONNECT, visitorName, game);
             this.session.getBasicRemote().sendText(new Gson().toJson(action));
         } catch (IOException ex) {
             throw new ResponseException(ResponseException.Code.ServerError, ex.getMessage());
         }
     }
+
+    public void leaveGame(String visitorName, GameSummary game) throws ResponseException{
+        try {
+            //leave game command
+            var action = new LoadGameMessage(LoadGameMessage.Type.CONNECT, visitorName, game);
+            this.session.getBasicRemote().sendText(new Gson().toJson(action));
+        } catch (IOException ex) {
+            throw new ResponseException(ResponseException.Code.ServerError, ex.getMessage());
+        }
+    }
+
+    public void resignGame(String visitorName, GameSummary game) throws ResponseException{
+        try {
+            //resign command
+            var action = new LoadGameMessage(LoadGameMessage.Type.CONNECT, visitorName, game);
+            this.session.getBasicRemote().sendText(new Gson().toJson(action));
+        } catch (IOException ex) {
+            throw new ResponseException(ResponseException.Code.ServerError, ex.getMessage());
+        }
+    }
+
+//    private RuntimeException runtimeExceptionFromJson(String body) {
+//        try {
+//            var jObject = new Gson().fromJson(body, Map.class);
+//            String msg;
+//            msg = jObject.getOrDefault("message", "Unknown error").toString();
+//            return new RuntimeException(msg);
+//        } catch (Exception e) {
+//            return new RuntimeException("Failed to parse error response: " + body, e);
+//        }
+//    }
 
 }
 

@@ -1,4 +1,6 @@
 package websocket.commands;
 
-public class MakeMoveCommand {
+import chess.ChessMove;
+
+public record MakeMoveCommand (ChessMove move){
 }

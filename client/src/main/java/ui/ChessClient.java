@@ -217,7 +217,7 @@ public class ChessClient implements NotificationHandler {
             JoinRequest request = new JoinRequest(realGameId, playerColor.toUpperCase());
             server.joinGame(request, authToken);
             gameState = GamePlayState.PLAYING;
-            ws.joinedGame(clientName);
+            ws.joinedGame(clientName, game);
             return String.format("You have now joined Game: %s as Team: %s", seqId, request.playerColor().toUpperCase(Locale.ROOT));
         }
         throw new RuntimeException("Expected: join <ID> [WHITE|BLACK]");
@@ -245,7 +245,7 @@ public class ChessClient implements NotificationHandler {
                 return "Game not found. Invalid Game ID";
             }
             gameState = GamePlayState.OBSERVING;
-            ws.joinedGame(clientName);
+            ws.joinedGame(clientName, game);
             return String.format("Observing game: %s (%s (white) vs %s (black))",
                     seqId,
                     game.whiteUsername(),
@@ -273,13 +273,13 @@ public class ChessClient implements NotificationHandler {
                     help - with possible commands
                     """;
         }
-        if (gameState != GamePlayState.NOGAMEPLAY){
+        if (gameState != GamePlayState.NOGAMEPLAY && state == State.SIGNEDIN){
             return """
-                    Redraw - Redraws the chess board
-                    Leave - Removes the user from the game
-                    Make move - Allows the user to make a move
-                    Resign - The user forfeits the game and the game is over
-                    Highlight Legal Moves - Highlights all legal moves
+                    redraw - Redraws the chess board
+                    leave - Removes the user from the game
+                    make move - Allows the user to make a move
+                    resign - The user forfeits the game and the game is over
+                    highlight legal moves - Highlights all legal moves
                     help - with possible game play commands
                     """;
         }

@@ -45,6 +45,8 @@ public class UserGameCommand {
         return gameID;
     }
 
+    public MakeMoveCommand move() {return}
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {

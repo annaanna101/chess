@@ -22,8 +22,7 @@ import org.jetbrains.annotations.NotNull;
 import server.ServerFacade;
 import webSocketMessages.Action;
 import webSocketMessages.Notification;
-import websocket.commands.MakeMoveCommand;
-import websocket.commands.UserGameCommand;
+import websocket.commands.*;
 import websocket.messages.ErrorMessage;
 import websocket.messages.LoadGameMessage;
 import websocket.messages.NotificationMessage;
@@ -110,7 +109,9 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         System.out.println("Websocket closed");
     }
 
-    private void connect(String visitorName, Session session, String teamColor, Integer gameID) throws IOException {
+    private void connect(Session session, String visitorName, ConnectCommand command) throws IOException {
+        Integer gameID = command.getGameID();
+        String teamColor = command.getTeamColor();
         connections.add(gameID, session);
         var message = String.format("%s joined the game as %s", visitorName, teamColor);
         var notification = new NotificationMessage(NotificationMessage.Type.CONNECT, message);

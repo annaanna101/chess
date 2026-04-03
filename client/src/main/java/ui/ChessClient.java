@@ -1,6 +1,7 @@
 package ui;
 
 import client.websocket.NotificationHandler;
+import client.websocket.ResponseException;
 import client.websocket.WebSocketFacade;
 import model.*;
 import server.ServerFacade;
@@ -200,7 +201,7 @@ public class ChessClient implements NotificationHandler {
         return sb.toString();
     }
 
-    public String join(String...params){
+    public String join(String...params) throws ResponseException {
         if (params.length == 2){
             int seqId;
             if (params[0].matches("^\\d+$")){
@@ -253,6 +254,8 @@ public class ChessClient implements NotificationHandler {
             );
         } catch (NumberFormatException e) {
             return "Invalid game ID";
+        } catch (ResponseException e) {
+            throw new RuntimeException(e);
         }
     }
 

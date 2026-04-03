@@ -1,11 +1,13 @@
 package ui;
 
+import client.websocket.ResponseException;
+
 import java.util.Scanner;
 
 public class PreLoginRepl {
     private final ChessClient client;
 
-    public PreLoginRepl(String serverUrl){
+    public PreLoginRepl(String serverUrl) throws ResponseException {
         client = new ChessClient(serverUrl);
     }
 

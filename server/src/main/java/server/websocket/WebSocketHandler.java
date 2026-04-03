@@ -5,9 +5,7 @@ import chess.ChessMove;
 import chess.InvalidMoveException;
 import com.google.gson.Gson;
 import dataaccess.DataAccessException;
-import dataaccess.MemoryDataAccess;
 import dataaccess.MySqlDataAccess;
-import exception.ResponseException;
 import io.javalin.websocket.WsCloseContext;
 import io.javalin.websocket.WsCloseHandler;
 import io.javalin.websocket.WsConnectContext;
@@ -15,13 +13,8 @@ import io.javalin.websocket.WsConnectHandler;
 import io.javalin.websocket.WsMessageContext;
 import io.javalin.websocket.WsMessageHandler;
 import model.GameD;
-import model.GameSummary;
-import model.JoinRequest;
 import org.eclipse.jetty.websocket.api.Session;
 import org.jetbrains.annotations.NotNull;
-import server.ServerFacade;
-import webSocketMessages.Action;
-import webSocketMessages.Notification;
 import websocket.commands.*;
 import websocket.messages.ErrorMessage;
 import websocket.messages.LoadGameMessage;
@@ -35,6 +28,10 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     private MySqlDataAccess dao;
     private Gson gson = new Gson();
 
+    public WebSocketHandler(MySqlDataAccess dao) {
+        this.dao = dao;
+    }
+
     @Override
     public void handleConnect(WsConnectContext ctx) {
         System.out.println("Websocket connected");
@@ -42,7 +39,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     }
 
     @Override
-    public void handleMessage(@NotNull WsMessageContext wsMessageContext) throws Exception {
+    public void handleMessage(@NotNull WsMessageContext wsMessageContext) throws Exception{
         int gameId = -1;
         Session session = wsMessageContext.session;
 
@@ -73,7 +70,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
     }
 
-    private void makeMove(Session session, String username, MakeMoveCommand command) throws InvalidMoveException, IOException, DataAccessException {
+    private void makeMove(Session session, String username, MakeMoveCommand command) throws IOException, DataAccessException {
         ChessMove move = command.getMove();
         Integer gameID = command.getGameID();
         GameD game = dao.getGame(gameID);
@@ -82,43 +79,50 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             chessGame.makeMove(move);
         } catch (InvalidMoveException e){
             sendMessage(session, gameID, new ErrorMessage("Invalid move: " + e.getMessage()));
-            throw new InvalidMoveException("Invalid move");
             return;
         }
         //figure out
-        connections.broadcast(session, new LoadGameMessage(LoadGameMessage.Type.LOAD_GAME, username, chessGame));
-//        connections.broadcast(session, new NotificationMessage(NotificationMessage.Type.MAKE_MOVE, String.format("Move made by %s", username)));
+        connections.broadcast(gameID, session, new LoadGameMessage(LoadGameMessage.Type.LOAD_GAME, username, chessGame));
     }
 
     private void sendMessage(Session session, int gameId, ErrorMessage errorMessage) {
 
     }
 
-    private void resign(Session session, String username, ResignCommand command) {
+    private void resign(Session session, String username, ResignCommand command) throws IOException {
+        Integer gameId = command.getGameID();
+        try {
+            dao.deleteGame(gameId);
+        } catch (DataAccessException e) {
+            sendMessage(session, gameId, new ErrorMessage("Could not resign the game: " + e.getMessage()));
+        }
+        connections.broadcast(gameId, session, new NotificationMessage(NotificationMessage.Type.RESIGN, String.format("%s has resigned the game. Congratulations!", username)));
+        connections.remove(session);
     }
 
     private void saveSession(int gameId, Session session) {
+        connections.add(gameId,session);
     }
 
     private String getUsername(String authToken) throws DataAccessException {
         return dao.getAuth(authToken).username();
     }
 
-    private void leaveGame(Session session, String username, LeaveGameCommand command) throws DataAccessException, IOException {
+    private void leaveGame(Session session, String username, LeaveGameCommand command) throws IOException {
         String teamColor = command.getTeamColor();
         Integer gameID = command.getGameID();
         try {
             dao.updateGame(gameID, teamColor, null);
         } catch (DataAccessException e) {
             sendMessage(session, gameID, new ErrorMessage("Could not leave game: " + e.getMessage()));
-            throw new DataAccessException(e.getMessage());
         }
-        connections.broadcast(session, new NotificationMessage(NotificationMessage.Type.LEAVE, String.format("%s left the game", username)));
+        connections.broadcast(gameID, session, new NotificationMessage(NotificationMessage.Type.LEAVE, String.format("%s left the game", username)));
         connections.remove(session);
     }
 
     @Override
     public void handleClose(WsCloseContext ctx) {
+        connections.remove(ctx.session);
         System.out.println("Websocket closed");
     }
 
@@ -128,7 +132,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         connections.add(gameID, session);
         var message = String.format("%s joined the game as %s", visitorName, teamColor);
         var notification = new NotificationMessage(NotificationMessage.Type.CONNECT, message);
-        connections.broadcast(session, notification);
+        connections.broadcast(gameID, session, notification);
     }
 
 }

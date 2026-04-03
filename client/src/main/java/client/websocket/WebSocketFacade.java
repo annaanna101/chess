@@ -1,12 +1,7 @@
 package client.websocket;
 
 import com.google.gson.Gson;
-import exception.ResponseException;
-import model.GameD;
 import model.GameSummary;
-import webSocketMessages.Action;
-import webSocketMessages.Notification;
-
 import jakarta.websocket.*;
 import websocket.messages.LoadGameMessage;
 import websocket.messages.NotificationMessage;
@@ -14,9 +9,7 @@ import websocket.messages.NotificationMessage;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Map;
 
-//need to extend Endpoint for websocket to work properly
 public class WebSocketFacade extends Endpoint {
 
     Session session;
@@ -41,7 +34,7 @@ public class WebSocketFacade extends Endpoint {
             });
         } catch (DeploymentException | IOException | URISyntaxException ex) {
             //might have to add Runtime to ResponseException thingy as done in either Chess client or Server Facade.
-            throw new ResponseException(ResponseException.Code.ServerError, ex.getMessage());
+            throw new ResponseException(ex.getMessage());
         }
     }
 
@@ -56,7 +49,7 @@ public class WebSocketFacade extends Endpoint {
             var action = new LoadGameMessage(LoadGameMessage.Type.CONNECT, visitorName, game);
             this.session.getBasicRemote().sendText(new Gson().toJson(action));
         } catch (IOException ex) {
-            throw new ResponseException(ResponseException.Code.ServerError, ex.getMessage());
+            throw new ResponseException(ex.getMessage());
         }
     }
 
@@ -66,7 +59,7 @@ public class WebSocketFacade extends Endpoint {
             var action = new LoadGameMessage(LoadGameMessage.Type.CONNECT, visitorName, game);
             this.session.getBasicRemote().sendText(new Gson().toJson(action));
         } catch (IOException ex) {
-            throw new ResponseException(ResponseException.Code.ServerError, ex.getMessage());
+            throw new ResponseException(ex.getMessage());
         }
     }
 
@@ -76,7 +69,7 @@ public class WebSocketFacade extends Endpoint {
             var action = new LoadGameMessage(LoadGameMessage.Type.CONNECT, visitorName, game);
             this.session.getBasicRemote().sendText(new Gson().toJson(action));
         } catch (IOException ex) {
-            throw new ResponseException(ResponseException.Code.ServerError, ex.getMessage());
+            throw new ResponseException(ex.getMessage());
         }
     }
 
@@ -86,20 +79,9 @@ public class WebSocketFacade extends Endpoint {
             var action = new LoadGameMessage(LoadGameMessage.Type.CONNECT, visitorName, game);
             this.session.getBasicRemote().sendText(new Gson().toJson(action));
         } catch (IOException ex) {
-            throw new ResponseException(ResponseException.Code.ServerError, ex.getMessage());
+            throw new ResponseException(ex.getMessage());
         }
     }
-
-//    private RuntimeException runtimeExceptionFromJson(String body) {
-//        try {
-//            var jObject = new Gson().fromJson(body, Map.class);
-//            String msg;
-//            msg = jObject.getOrDefault("message", "Unknown error").toString();
-//            return new RuntimeException(msg);
-//        } catch (Exception e) {
-//            return new RuntimeException("Failed to parse error response: " + body, e);
-//        }
-//    }
 
 }
 

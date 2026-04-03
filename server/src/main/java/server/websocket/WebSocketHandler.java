@@ -73,7 +73,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
     }
 
-    private void makeMove(Session session, String username, MakeMoveCommand command) throws DataAccessException, InvalidMoveException, IOException {
+    private void makeMove(Session session, String username, MakeMoveCommand command) throws InvalidMoveException, IOException, DataAccessException {
         ChessMove move = command.getMove();
         Integer gameID = command.getGameID();
         GameD game = dao.getGame(gameID);
@@ -82,10 +82,12 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             chessGame.makeMove(move);
         } catch (InvalidMoveException e){
             sendMessage(session, gameID, new ErrorMessage("Invalid move: " + e.getMessage()));
+            throw new InvalidMoveException("Invalid move");
             return;
         }
-        //connections.broadcast(gameID, new LoadGameMessage(game));
-        connections.broadcast(session, new NotificationMessage(NotificationMessage.Type.MAKE_MOVE, String.format("Move made by %s", username)));
+        //figure out
+        connections.broadcast(session, new LoadGameMessage(LoadGameMessage.Type.LOAD_GAME, username, chessGame));
+//        connections.broadcast(session, new NotificationMessage(NotificationMessage.Type.MAKE_MOVE, String.format("Move made by %s", username)));
     }
 
     private void sendMessage(Session session, int gameId, ErrorMessage errorMessage) {
@@ -101,7 +103,17 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     private String getUsername(String authToken) {
     }
 
-    private void leaveGame(Session session, String username, LeaveGameCommand command) {
+    private void leaveGame(Session session, String username, LeaveGameCommand command) throws DataAccessException, IOException {
+        String teamColor = command.getTeamColor();
+        Integer gameID = command.getGameID();
+        try {
+            dao.updateGame(gameID, teamColor, null);
+        } catch (DataAccessException e) {
+            sendMessage(session, gameID, new ErrorMessage("Could not leave game: " + e.getMessage()));
+            throw new DataAccessException(e.getMessage());
+        }
+        connections.broadcast(session, new NotificationMessage(NotificationMessage.Type.LEAVE, String.format("%s left the game", username)));
+        connections.remove(session);
     }
 
     @Override

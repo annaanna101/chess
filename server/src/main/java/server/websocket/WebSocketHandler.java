@@ -1,6 +1,12 @@
 package server.websocket;
 
+import chess.ChessGame;
+import chess.ChessMove;
+import chess.InvalidMoveException;
 import com.google.gson.Gson;
+import dataaccess.DataAccessException;
+import dataaccess.MemoryDataAccess;
+import dataaccess.MySqlDataAccess;
 import exception.ResponseException;
 import io.javalin.websocket.WsCloseContext;
 import io.javalin.websocket.WsCloseHandler;
@@ -8,8 +14,12 @@ import io.javalin.websocket.WsConnectContext;
 import io.javalin.websocket.WsConnectHandler;
 import io.javalin.websocket.WsMessageContext;
 import io.javalin.websocket.WsMessageHandler;
+import model.GameD;
+import model.GameSummary;
+import model.JoinRequest;
 import org.eclipse.jetty.websocket.api.Session;
 import org.jetbrains.annotations.NotNull;
+import server.ServerFacade;
 import webSocketMessages.Action;
 import webSocketMessages.Notification;
 import websocket.commands.MakeMoveCommand;
@@ -23,6 +33,8 @@ import java.io.IOException;
 public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsCloseHandler {
 
     private final ConnectionManager connections = new ConnectionManager();
+    private MySqlDataAccess dao;
+    private Gson gson = new Gson();
 
     @Override
     public void handleConnect(WsConnectContext ctx) {
@@ -32,30 +44,20 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
     @Override
     public void handleMessage(@NotNull WsMessageContext wsMessageContext) throws Exception {
-//        try {
-//            LoadGameMessage action = new Gson().fromJson(ctx.message(), LoadGameMessage.class);
-//            String teamColor;
-//            if (action.visitorName().equals(action.game().getWhiteUsername())){
-//                teamColor = "WHITE";
-//            } else {
-//                teamColor = "BLACK";
-//            }
-//            switch (action.type()) {
-//                case CONNECT -> connect(action.visitorName(), ctx.session, teamColor, action.game().getGameID());
-//                case MAKE_MOVE -> makeMove(action.visitorName(), ctx.session);
-//            }
-//        } catch (IOException ex) {
-//            ex.printStackTrace();
-//        }
         int gameId = -1;
         Session session = wsMessageContext.session;
 
         try {
-            UserGameCommand command = Serializer.fromJson(
+            UserGameCommand command = gson.fromJson(
                     wsMessageContext.message(), UserGameCommand.class);
             gameId = command.getGameID();
             String username = getUsername(command.getAuthToken());
             saveSession(gameId, session);
+
+            if (command.getCommandType() == UserGameCommand.CommandType.MAKE_MOVE){
+                command = gson.fromJson(wsMessageContext.message(), MakeMoveCommand.class);
+
+            }
 
             switch (command.getCommandType()) {
                 case CONNECT -> connect(session, username, (ConnectCommand) command);
@@ -70,6 +72,21 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             sendMessage(session, gameId, new ErrorMessage("Error: " + ex.getMessage()));
         }
 
+    }
+
+    private void makeMove(Session session, String username, MakeMoveCommand command) throws DataAccessException, InvalidMoveException, IOException {
+        ChessMove move = command.getMove();
+        Integer gameID = command.getGameID();
+        GameD game = dao.getGame(gameID);
+        ChessGame chessGame = game.getGame();
+        try {
+            chessGame.makeMove(move);
+        } catch (InvalidMoveException e){
+            sendMessage(session, gameID, new ErrorMessage("Invalid move: " + e.getMessage()));
+            return;
+        }
+        //connections.broadcast(gameID, new LoadGameMessage(game));
+        connections.broadcast(session, new NotificationMessage(NotificationMessage.Type.MAKE_MOVE, String.format("Move made by %s", username)));
     }
 
     private void sendMessage(Session session, int gameId, ErrorMessage errorMessage) {
@@ -98,13 +115,6 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         var message = String.format("%s joined the game as %s", visitorName, teamColor);
         var notification = new NotificationMessage(NotificationMessage.Type.CONNECT, message);
         connections.broadcast(session, notification);
-    }
-
-    private void makeMove(String visitorName, Session session) throws IOException {
-        var message = String.format("%s left the shop", visitorName);
-        var notification = new Notification(Notification.Type.DEPARTURE, message);
-        connections.broadcast(session, notification);
-        connections.remove(session);
     }
 
 }

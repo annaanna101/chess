@@ -100,7 +100,8 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     private void saveSession(int gameId, Session session) {
     }
 
-    private String getUsername(String authToken) {
+    private String getUsername(String authToken) throws DataAccessException {
+        return dao.getAuth(authToken).username();
     }
 
     private void leaveGame(Session session, String username, LeaveGameCommand command) throws DataAccessException, IOException {

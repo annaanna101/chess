@@ -127,6 +127,12 @@ public class MySqlDataAccess implements DataAccess{
         executeUpdate(statement, token);
     }
 
+    //added for resign
+    public void deleteGame(Integer gameId) throws DataAccessException {
+        var statement = "DELETE FROM game WHERE gameID=?";
+        executeUpdate(statement, gameId);
+    }
+
     public void clearUsers() throws DataAccessException {
         var statement = "DELETE FROM `user`";
         try {

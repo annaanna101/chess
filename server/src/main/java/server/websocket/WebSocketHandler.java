@@ -54,11 +54,14 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
             if (command.getCommandType() == UserGameCommand.CommandType.MAKE_MOVE){
                 command = gson.fromJson(wsMessageContext.message(), MakeMoveCommand.class);
-
             }
 
+
             switch (command.getCommandType()) {
-                case CONNECT -> connect(session, username, (ConnectCommand) command);
+                case CONNECT -> {
+                    ConnectCommand cc = gson.fromJson(wsMessageContext.message(), ConnectCommand.class);
+                    connect(session, username, cc);
+                }
                 case MAKE_MOVE -> makeMove(session, username, (MakeMoveCommand) command);
                 case LEAVE -> leaveGame(session, username, (LeaveGameCommand) command);
                 case RESIGN -> resign(session, username, (ResignCommand) command);
@@ -92,13 +95,16 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 //            sendMessage(session, new ErrorMessage("Invalid move: " + e.getMessage()));
 //            return;
 //        }
-        connections.broadcast(gameID, session, new LoadGameMessage(LoadGameMessage.Type.LOAD_GAME, username, chessGame));
+        connections.broadcast(gameID, session, new LoadGameMessage(username, chessGame));
     }
 
     private void sendMessage(Session session, Object message) throws IOException {
-        String msg = new Gson().toJson(message);
+        String msg = gson.toJson(message);
         if (session.isOpen()) {
             session.getRemote().sendString(msg);
+            System.out.println("Sent message: " + msg);
+        }else {
+            System.out.println("Session is closed, message not sent");
         }
     }
 
@@ -147,19 +153,22 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
     private void connect(Session session, String username, ConnectCommand command) throws IOException, DataAccessException {
         Integer gameID = command.getGameID();
-        String teamColor = command.getTeamColor();
 //        connections.add(gameID, session);
-        var message = "";
-        if (teamColor == null){
-            message = String.format("%s joined the game as an observer", username);
-        } else {
-            message = String.format("%s joined the game as %s", username, teamColor);
-        }
+        System.out.println("Connecting user: " + username + ", gameID: " + gameID);
         GameD game = dao.getGame(gameID);
+        System.out.println("Game fetched: " + game);
+//        var message = "";
+        var message = String.format("%s joined", username);
+//        if (teamColor == null){
+//            message = String.format("%s joined the game as an observer", username);
+//        } else {
+//            message = String.format("%s joined", username);
+//        }
+//        GameD game = dao.getGame(gameID);
         if (game == null){
             throw new DataAccessException("This game does not exist");
         }
-        sendMessage(session, new LoadGameMessage(LoadGameMessage.Type.LOAD_GAME, username, game.getGame()));
+        sendMessage(session, new LoadGameMessage(username, game.getGame()));
         var notification = new NotificationMessage(NotificationMessage.Type.CONNECT, message);
         connections.broadcast(gameID, session, notification);
     }

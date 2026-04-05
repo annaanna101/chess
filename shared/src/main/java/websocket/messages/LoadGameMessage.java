@@ -3,11 +3,20 @@ package websocket.messages;
 import chess.ChessGame;
 import com.google.gson.Gson;
 
-public record LoadGameMessage (Type type, String visitorName, ChessGame game){
-    public enum Type {
-        LOAD_GAME
+public class LoadGameMessage extends ServerMessage{
+    private final String visitorName;
+    private final ChessGame game;
+
+    public LoadGameMessage (String visitorName, ChessGame game) {
+        super(ServerMessage.ServerMessageType.LOAD_GAME);
+        this.visitorName = visitorName;
+        this.game = game;
     }
-    public String toString() {
-        return new Gson().toJson(this);
+    public String getVisitorName() {
+        return visitorName;
+    }
+
+    public ChessGame getGame() {
+        return game;
     }
 }

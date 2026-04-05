@@ -12,7 +12,7 @@ public class UserGameCommand {
 
     private CommandType commandType;
     private String authToken;
-    private Integer gameID;
+    private int gameID;
 
     public UserGameCommand() {}
 
@@ -44,6 +44,7 @@ public class UserGameCommand {
     public Integer getGameID() {
         return gameID;
     }
+
 
 
     @Override

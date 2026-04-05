@@ -1,8 +1,15 @@
 package websocket.messages;
 
-import com.google.gson.Gson;
 
-public record NotificationMessage (Type type, String message) {
+public class NotificationMessage extends ServerMessage {
+    private final Type type;
+    private final String message;
+
+    public NotificationMessage (Type type, String message){
+        super(ServerMessageType.NOTIFICATION);
+        this.type = type;
+        this.message = message;
+    }
     public enum Type {
         CONNECT,
         MAKE_MOVE,
@@ -10,7 +17,11 @@ public record NotificationMessage (Type type, String message) {
         RESIGN
     }
 
-    public String toString() {
-        return new Gson().toJson(this);
+    public Type getType() {
+        return type;
+    }
+
+    public String getMessage() {
+        return message;
     }
 }

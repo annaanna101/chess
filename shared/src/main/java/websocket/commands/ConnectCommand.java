@@ -1,6 +1,5 @@
 package websocket.commands;
 
-import chess.ChessMove;
 
 public class ConnectCommand extends UserGameCommand{
     private final String teamColor;

@@ -13,6 +13,7 @@ import service.UserService;
 public class Server {
 
     private final Javalin javalin;
+    private final WebSocketHandler webSocketHandler;
 
     public Server() {
         DataAccess dataAccess;
@@ -21,7 +22,7 @@ public class Server {
         } catch (DataAccessException e) {
             throw new RuntimeException(e);
         }
-        final WebSocketHandler webSocketHandler;
+        webSocketHandler = new WebSocketHandler(dataAccess);
         UserService userService = new UserService(dataAccess);
         GameService gameService = new GameService(dataAccess);
         HandlerHelper helper = new HandlerHelper();
@@ -46,6 +47,11 @@ public class Server {
         javalin.exception(DataAccessException.class, (ex, ctx) -> {
             ctx.status(500);
             ctx.json(new Gson().toJson(new ErrorResponse(ex.getMessage())));
+        });
+        javalin.ws("/ws", ws -> {
+            ws.onConnect(webSocketHandler);
+            ws.onMessage(webSocketHandler);
+            ws.onClose(webSocketHandler);
         });
     }
 

@@ -99,21 +99,22 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             return;
         }
         if (listOfCompletedGames.get(gameID) != null){
-            sendMessage(session, new ErrorMessage("Error: This game has already been resigned, so you cannot make a move."));
+            sendMessage(session, new LoadGameMessage(username, chessGame));
+            return;
+        }
+        if (teamColor != chessGame.getTeamTurn()){
+            sendMessage(session, new ErrorMessage("It is not your turn."));
             return;
         }
         try {
             if (chessGame.isInCheck(teamColor)){
-                connections.broadcast(gameID, null, new NotificationMessage(NotificationMessage.Type.MAKE_MOVE, String.format("%s is in checkmate.", username)));
-            } else if (chessGame.isInCheck(teamColor)){
-//                connections.broadcast(gameID, session, new LoadGameMessage(username, chessGame));
                 connections.broadcast(gameID, null, new NotificationMessage(NotificationMessage.Type.MAKE_MOVE, String.format("%s is in check.", username)));
-
-//                return;
-            }
-            if (teamColor != chessGame.getTeamTurn()){
-                sendMessage(session, new ErrorMessage("Invalid move: It is not your turn"));
-                return;
+            } else if (chessGame.isInCheckmate(teamColor)){
+                connections.broadcast(gameID, session, new LoadGameMessage(username, chessGame));
+                connections.broadcast(gameID, null, new NotificationMessage(NotificationMessage.Type.MAKE_MOVE, String.format("%s is in checkmate.", username)));
+                listOfCompletedGames.put(gameID, username);
+            } else if (chessGame.isInStalemate(teamColor)){
+                listOfCompletedGames.put(gameID,username);
             }
             chessGame.makeMove(move);
             sendMessage(session, new LoadGameMessage(username, chessGame));
@@ -130,7 +131,6 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         String msg = gson.toJson(message);
         if (session.isOpen()) {
             session.getRemote().sendString(msg);
-            System.out.println("Sent message: " + msg);
         }else {
             System.out.println("Session is closed, message not sent");
         }
@@ -150,7 +150,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         listOfCompletedGames.put(gameId, username);
         sendMessage(session, new NotificationMessage(NotificationMessage.Type.RESIGN, String.format("%s has resigned the game. Congratulations!", username)));
         connections.broadcast(gameId, session, new NotificationMessage(NotificationMessage.Type.RESIGN, String.format("%s has resigned the game. Congratulations!", username)));
-        connections.remove(session);
+        connections.remove(gameId, session);
     }
 
     private void saveSession(int gameId, Session session) {
@@ -161,23 +161,27 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         return dao.getAuth(authToken).username();
     }
 
-    private void leaveGame(Session session, String username, LeaveGameCommand command) throws IOException{
-        String teamColor = command.getTeamColor();
+    private void leaveGame(Session session, String username, LeaveGameCommand command) throws IOException, DataAccessException {
         Integer gameID = command.getGameID();
-//        if (state == PlayerState.PLAYING){
-//            try {
-//                dao.updateGame(gameID, teamColor, null);
-//            } catch (DataAccessException e) {
-//                sendMessage(session, new ErrorMessage("Could not leave game: " + e.getMessage()));
-//            }
-//        }
-        connections.broadcast(gameID, session, new NotificationMessage(NotificationMessage.Type.LEAVE, String.format("%s left the game", username)));
-        connections.remove(session);
+        GameD game = dao.getGame(gameID);
+        if (game == null){
+            return;
+        }
+//        Server sends a Notification message to all other clients in that game informing them that the root client left. This applies to both players and observers.
+        if (game.getWhiteUsername().equals(username)){
+            game.setWhiteUser(null);
+        }else if (game.getBlackUsername().equals(username)) {
+            game.setBlackUser(null);
+        }
+        boolean isRemoved = connections.remove(gameID, session);
+        if(isRemoved){
+            connections.broadcast(gameID, session, new NotificationMessage(NotificationMessage.Type.LEAVE, String.format("%s left the game", username)));
+        }
     }
 
     @Override
     public void handleClose(WsCloseContext ctx) {
-        connections.remove(ctx.session);
+        connections.remove(null, ctx.session);
         System.out.println("Websocket closed");
     }
 

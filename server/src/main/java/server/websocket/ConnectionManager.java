@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class ConnectionManager {
     public final Map<Integer, List<Session>> connections = new HashMap<>();
@@ -18,10 +17,14 @@ public class ConnectionManager {
         connections.computeIfAbsent(gameID, _ -> new ArrayList<>()).add(session);
     }
 
-    public synchronized void remove(Session session) {
-        for (Map.Entry<Integer, List<Session>> entry : connections.entrySet())
-            entry.getValue().remove(session);
+    public synchronized boolean remove(Integer gameID, Session session) {
+        List<Session> sessions = connections.get(gameID);
+        if (sessions == null){
+            return false;
+        }
+        return sessions.removeIf(s -> s.equals(session));
     }
+
 
     public synchronized void broadcast(Integer gameId, Session excludeSession, Object notification) throws IOException {
         List<Session> sessions = connections.get(gameId);

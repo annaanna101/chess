@@ -1,5 +1,6 @@
 package dataaccess;
 
+import chess.ChessBoard;
 import chess.ChessGame;
 import com.google.gson.Gson;
 import model.AuthD;
@@ -173,7 +174,13 @@ public class MySqlDataAccess implements DataAccess{
 
         return id;
     }
-
+    // create a new function that actually updates the game
+    public void updateChessBoard (Integer gameID, GameD game, ChessGame gameBoard) throws DataAccessException{
+        GameD updatedGame = new GameD(gameID, game.getWhiteUsername(), game.getBlackUsername(), game.getGameName(), gameBoard);
+        String json = new Gson().toJson(updatedGame);
+        var statement = "UPDATE game SET game=? WHERE gameID=?";
+        executeUpdate(statement, json, gameID);
+    }
     public void updateGame(Integer gameID, String playerColor, String username) throws DataAccessException {
         GameD game = getGame(gameID);
         if (game == null) {
@@ -195,6 +202,27 @@ public class MySqlDataAccess implements DataAccess{
             if (game.getBlackUsername() != null) {
                 throw new DataAccessException("Error: already taken");
             }
+            var statement = "UPDATE game SET blackUsername=?, game=? WHERE gameID=?";
+            ChessGame gameBoard = game.getGame();
+            GameD updatedGame = new GameD(gameID, game.getWhiteUsername(), username, game.getGameName(), gameBoard);
+            String json = new Gson().toJson(updatedGame);
+            executeUpdate(statement, username, json, gameID);
+        }
+    }
+
+    //added for leave game
+    public void leaveGame(Integer gameID, String playerColor, String username) throws DataAccessException{
+        GameD game = getGame(gameID);
+        if (game == null) {
+            throw new DataAccessException("Error: Game not found");
+        }
+        if (playerColor.equals("WHITE")){
+            var statement = "UPDATE game SET whiteUsername=?, game=? WHERE gameID=?";
+            ChessGame gameBoard = game.getGame();
+            GameD updatedGame = new GameD(gameID, username, game.getBlackUsername(), game.getGameName(), gameBoard);
+            String json = new Gson().toJson(updatedGame);
+            executeUpdate(statement, username, json, gameID);
+        } else {
             var statement = "UPDATE game SET blackUsername=?, game=? WHERE gameID=?";
             ChessGame gameBoard = game.getGame();
             GameD updatedGame = new GameD(gameID, game.getWhiteUsername(), username, game.getGameName(), gameBoard);

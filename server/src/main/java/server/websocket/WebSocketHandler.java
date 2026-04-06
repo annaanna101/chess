@@ -55,7 +55,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                     wsMessageContext.message(), UserGameCommand.class);
             gameId = command.getGameID();
             String username = getUsername(command.getAuthToken());
-            saveSession(gameId, session);
+//            saveSession(gameId, session);
 
             switch (command.getCommandType()) {
                 case CONNECT -> {
@@ -90,16 +90,19 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         GameD game = dao.getGame(gameID);
         ChessGame chessGame = game.getGame();
         ChessGame.TeamColor teamColor;
-        if (game.getWhiteUsername().equals(username)){
+        ChessGame.TeamColor oppenent;
+        if (game.getWhiteUsername() != null && game.getWhiteUsername().equals(username)){
             teamColor = ChessGame.TeamColor.WHITE;
-        }else if (game.getBlackUsername().equals(username)){
+            oppenent = ChessGame.TeamColor.BLACK;
+        }else if (game.getBlackUsername() != null && game.getBlackUsername().equals(username)){
             teamColor = ChessGame.TeamColor.BLACK;
+            oppenent = ChessGame.TeamColor.WHITE;
         } else {
             sendMessage(session, new ErrorMessage("Cannot make a move. User is observing"));
             return;
         }
         if (listOfCompletedGames.get(gameID) != null){
-            sendMessage(session, new LoadGameMessage(username, chessGame));
+            sendMessage(session, new ErrorMessage("Error: This game has already been resigned."));
             return;
         }
         if (teamColor != chessGame.getTeamTurn()){
@@ -107,24 +110,23 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             return;
         }
         try {
-            if (chessGame.isInCheck(teamColor)){
+            chessGame.makeMove(move);
+            dao.updateChessBoard(gameID, game, chessGame);
+            if (chessGame.isInCheck(oppenent)){
                 connections.broadcast(gameID, null, new NotificationMessage(NotificationMessage.Type.MAKE_MOVE, String.format("%s is in check.", username)));
-            } else if (chessGame.isInCheckmate(teamColor)){
-                connections.broadcast(gameID, session, new LoadGameMessage(username, chessGame));
+            } else if (chessGame.isInCheckmate(oppenent)){
                 connections.broadcast(gameID, null, new NotificationMessage(NotificationMessage.Type.MAKE_MOVE, String.format("%s is in checkmate.", username)));
                 listOfCompletedGames.put(gameID, username);
             } else if (chessGame.isInStalemate(teamColor)){
                 listOfCompletedGames.put(gameID,username);
             }
-            chessGame.makeMove(move);
-            sendMessage(session, new LoadGameMessage(username, chessGame));
         } catch (InvalidMoveException e){
             sendMessage(session, new ErrorMessage("Invalid move: " + e.getMessage()));
             return;
         }
+        connections.broadcast(gameID, null, new LoadGameMessage(username, chessGame));
         var notification = new NotificationMessage(NotificationMessage.Type.MAKE_MOVE, String.format("%s made a move", username));
         connections.broadcast(gameID, session, notification);
-        connections.broadcast(gameID, session, new LoadGameMessage(username, chessGame));
     }
 
     private void sendMessage(Session session, Object message) throws IOException {
@@ -164,14 +166,24 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     private void leaveGame(Session session, String username, LeaveGameCommand command) throws IOException, DataAccessException {
         Integer gameID = command.getGameID();
         GameD game = dao.getGame(gameID);
+        String playerColor = "";
+        boolean isPlayer = false;
         if (game == null){
             return;
         }
-//        Server sends a Notification message to all other clients in that game informing them that the root client left. This applies to both players and observers.
-        if (game.getWhiteUsername().equals(username)){
-            game.setWhiteUser(null);
-        }else if (game.getBlackUsername().equals(username)) {
-            game.setBlackUser(null);
+        if (game.getWhiteUsername() != null){
+            if (game.getWhiteUsername().equals(username)) {
+                playerColor = "WHITE";
+                isPlayer = true;
+            }
+        } else if (game.getBlackUsername() == null){
+            if (game.getBlackUsername().equals(username)) {
+                playerColor = "BLACK";
+                isPlayer = true;
+            }
+        }
+        if (isPlayer){
+            dao.leaveGame(gameID, playerColor, null);
         }
         boolean isRemoved = connections.remove(gameID, session);
         if(isRemoved){
@@ -197,6 +209,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         if (game == null){
             throw new DataAccessException("This game does not exist");
         }
+        saveSession(gameID, session);
         sendMessage(session, new LoadGameMessage(username, game.getGame()));
         var notification = new NotificationMessage(NotificationMessage.Type.CONNECT, message);
         connections.broadcast(gameID, session, notification);

@@ -14,7 +14,8 @@ import java.util.Map;
 
 public class ChessClient implements NotificationHandler {
     private final ServerFacade server;
-    private String clientName = null;
+//    private String clientName = null;
+    private Integer gameInteger = -1;
     private State state = State.SIGNEDOUT;
     private AuthD authToken;
     private final WebSocketFacade ws;
@@ -49,11 +50,11 @@ public class ChessClient implements NotificationHandler {
 
             if (gameState != GamePlayState.NOGAMEPLAY){
                 return switch (cmd) {
-                    case "Redraw Chess Board" -> redraw(params);
-                    case "Leave" -> leave(params);
+                    case "Redraw Chess Board" -> redraw();
+                    case "Leave" -> leave();
                     case "Make Move" -> makeMove(params);
-                    case "Resign" -> resign(params);
-                    case "Highlight Legal Moves" -> highlight(params);
+                    case "Resign" -> resign();
+                    case "Highlight Legal Moves" -> highlight();
                     default ->  help();
                 };
             }
@@ -75,36 +76,61 @@ public class ChessClient implements NotificationHandler {
     }
 
     public void notify(NotificationMessage notification){
-        System.out.println(notification.message());
+        System.out.println(notification.getMessage());
         System.out.println(">>> ");
     }
 
-    private String highlight(String[] params) {
+    private String highlight() {
+        //figure out if I need to return anything (like the team color)
         return null;
     }
 
-    private String resign(String[] params) {
+    private String resign() throws ResponseException {
+//        if (params.length != 1){
+//            return "Expected resign <gameID>";
+//        }
+//        int gameID;
+//        if (params[0].matches("^\\d+$")){
+//            gameID = Integer.parseInt(params[0]);
+//        } else {
+//            return "Invalid game ID. Use Integer";
+//        }
         if (gameState == GamePlayState.OBSERVING){
             return "Error: You cannot resign when observing a game.";
         }
+        ws.resignGame(authToken.authToken(), getRealGameID(gameInteger));
         return null;
     }
 
-    private String makeMove(String[] params) {
+    private String makeMove(String[] params) throws ResponseException {
+        //figure out where to pass in move
+        //figure out how to change user input into computer input.
+        //figure out how to map values (a -> 1, b -> 8)
+        //see if the moves are different depending on the board in the computer
         if (gameState == GamePlayState.OBSERVING){
             return "Error: You cannot make a move when observing a game.";
         }
+        ws.makeMove(authToken.authToken(), gameInteger);
         return null;
     }
 
-    private String leave(String[] params) {
-        //do stuff
-
+    private String leave() throws ResponseException {
+//        if (params.length != 1){
+//            return "Expected leave <gameID>";
+//        }
+//        int seqId;
+//        if (params[0].matches("^\\d+$")){
+//            seqId = Integer.parseInt(params[0]);
+//        } else {
+//            return "Invalid game ID. Use Integer";
+//        }
+        ws.leaveGame(authToken.authToken(), getRealGameID(gameInteger));
         gameState = GamePlayState.NOGAMEPLAY;
         return null;
     }
 
-    private String redraw(String[] params) {
+    private String redraw() {
+        //figure out if I need to return anything (like the team color)
         return null;
     }
 
@@ -143,7 +169,7 @@ public class ChessClient implements NotificationHandler {
             LoginResult result = server.login(request);
             this.authToken = new AuthD(result.authToken(), result.username());
             state = State.SIGNEDIN;
-            clientName = String.join("-", username);
+//            clientName = String.join("-", username);
             return String.format("You are successfully logged in as %s", username);
         }
         throw new RuntimeException("Expected: login <USERNAME> <PASSWORD>");
@@ -218,7 +244,8 @@ public class ChessClient implements NotificationHandler {
             JoinRequest request = new JoinRequest(realGameId, playerColor.toUpperCase());
             server.joinGame(request, authToken);
             gameState = GamePlayState.PLAYING;
-            ws.joinedGame(clientName, game);
+            gameInteger = getRealGameID(seqId);
+            ws.joinedGame(authToken.authToken(), realGameId);
             return String.format("You have now joined Game: %s as Team: %s", seqId, request.playerColor().toUpperCase(Locale.ROOT));
         }
         throw new RuntimeException("Expected: join <ID> [WHITE|BLACK]");
@@ -245,8 +272,9 @@ public class ChessClient implements NotificationHandler {
             if (game == null) {
                 return "Game not found. Invalid Game ID";
             }
+            gameInteger = getRealGameID(seqId);
             gameState = GamePlayState.OBSERVING;
-            ws.joinedGame(clientName, game);
+            ws.joinedGame(authToken.authToken(), game.gameID());
             return String.format("Observing game: %s (%s (white) vs %s (black))",
                     seqId,
                     game.whiteUsername(),

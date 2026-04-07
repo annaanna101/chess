@@ -32,30 +32,18 @@ public class GamePlayRepl {
             if("leave".equals(result)){
                 new PostLoginRepl(client).run();
             }
-//            if (line.startsWith("join") || line.startsWith("observe")){
-//                String[] tokens = line.split(" ");
-//                int seqId;
-//                if(tokens[1].matches("^\\d+$")){
-//                    seqId = Integer.parseInt(tokens[1]);
-//                } else {
-//                    continue;
-//                }
-//                Integer realGameID = client.getRealGameID(seqId);
-//                if (realGameID == null) {
-//                    System.out.println("Invalid game ID. Make sure to run 'list' first.");
-//                    continue;
-//                }
-//                if (result != null && !result.contains("Error")){
-//                    if (tokens.length >= 3){
-//                        String color = tokens[2];
-//                        DrawBoard.drawCorrectBoard(color);
-//                    } else {
-//                        String color = tokens[0];
-//                        DrawBoard.drawCorrectBoard(color);
-//                    }
-//                }
-//                new GamePlayRepl(client, realGameID).run();
-//            }
+            if (line.startsWith("redraw")){
+                String[] tokens = line.split(" ");
+                String color = tokens[2];
+                //figure out how to get color
+                DrawBoard.drawCorrectBoard(color);
+            }
+            if (line.startsWith("highlight")){
+                String[] tokens = line.split(" ");
+                String color = tokens[2];
+                //make higlightboard
+                DrawBoard.drawHighlightBoard(color);
+            }
         }
     }
 

@@ -1,9 +1,8 @@
 package client.websocket;
 
 import com.google.gson.Gson;
-import model.GameSummary;
 import jakarta.websocket.*;
-import websocket.messages.LoadGameMessage;
+import websocket.commands.UserGameCommand;
 import websocket.messages.NotificationMessage;
 
 import java.io.IOException;
@@ -33,7 +32,6 @@ public class WebSocketFacade extends Endpoint {
                 }
             });
         } catch (DeploymentException | IOException | URISyntaxException ex) {
-            //might have to add Runtime to ResponseException thingy as done in either Chess client or Server Facade.
             throw new ResponseException(ex.getMessage());
         }
     }
@@ -43,41 +41,44 @@ public class WebSocketFacade extends Endpoint {
     public void onOpen(Session session, EndpointConfig endpointConfig) {
     }
 
-    public void joinedGame(String visitorName, GameSummary game) throws ResponseException{
+    public void joinedGame(String auth, Integer gameID) throws ResponseException{
         try {
-            //case CONNECT -> connect(session, username, (ConnectCommand) command);
-            var action = new LoadGameMessage(LoadGameMessage.Type.CONNECT, visitorName, game);
-            this.session.getBasicRemote().sendText(new Gson().toJson(action));
+            var connect = new UserGameCommand(UserGameCommand.CommandType.CONNECT, auth, gameID);
+            this.session.getBasicRemote().sendText(new Gson().toJson(connect));
         } catch (IOException ex) {
             throw new ResponseException(ex.getMessage());
         }
     }
 
-    public void makeMove(String visitorName, GameSummary game) throws ResponseException{
+    public void makeMove(String auth, Integer gameID) throws ResponseException{
         try {
-            //make move command
-            var action = new LoadGameMessage(LoadGameMessage.Type.CONNECT, visitorName, game);
-            this.session.getBasicRemote().sendText(new Gson().toJson(action));
+//            var connect = new UserGameCommand(UserGameCommand.CommandType.CONNECT, visitorName, game.gameID());
+//            this.session.getBasicRemote().sendText(new Gson().toJson(connect));
+            var move = new UserGameCommand(UserGameCommand.CommandType.MAKE_MOVE, auth, gameID);
+            this.session.getBasicRemote().sendText(new Gson().toJson(move));
         } catch (IOException ex) {
             throw new ResponseException(ex.getMessage());
         }
     }
 
-    public void leaveGame(String visitorName, GameSummary game) throws ResponseException{
+    public void leaveGame(String auth, Integer gameID) throws ResponseException{
         try {
             //leave game command
-            var action = new LoadGameMessage(LoadGameMessage.Type.CONNECT, visitorName, game);
-            this.session.getBasicRemote().sendText(new Gson().toJson(action));
+//            var connect = new UserGameCommand(UserGameCommand.CommandType.CONNECT, visitorName, game.gameID());
+//            this.session.getBasicRemote().sendText(new Gson().toJson(connect));
+            var leave = new UserGameCommand(UserGameCommand.CommandType.LEAVE, auth, gameID);
+            this.session.getBasicRemote().sendText(new Gson().toJson(leave));
         } catch (IOException ex) {
             throw new ResponseException(ex.getMessage());
         }
     }
 
-    public void resignGame(String visitorName, GameSummary game) throws ResponseException{
+    public void resignGame(String auth, Integer gameID) throws ResponseException{
         try {
-            //resign command
-            var action = new LoadGameMessage(LoadGameMessage.Type.CONNECT, visitorName, game);
-            this.session.getBasicRemote().sendText(new Gson().toJson(action));
+//            var connect = new UserGameCommand(UserGameCommand.CommandType.CONNECT, visitorName, game.gameID());
+//            this.session.getBasicRemote().sendText(new Gson().toJson(connect));
+            var resign = new UserGameCommand(UserGameCommand.CommandType.RESIGN, auth, gameID);
+            this.session.getBasicRemote().sendText(new Gson().toJson(resign));
         } catch (IOException ex) {
             throw new ResponseException(ex.getMessage());
         }

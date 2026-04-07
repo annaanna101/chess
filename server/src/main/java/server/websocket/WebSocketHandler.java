@@ -80,7 +80,6 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             ex.printStackTrace();
             sendMessage(session, new ErrorMessage("ERROR: " + ex.getMessage()));
         }
-
     }
 
     private void makeMove(Session session, String username, MakeMoveCommand command) throws IOException, DataAccessException {

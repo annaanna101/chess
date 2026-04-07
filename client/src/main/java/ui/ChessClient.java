@@ -1,5 +1,8 @@
 package ui;
 
+import chess.ChessMove;
+import chess.ChessPiece;
+import chess.ChessPosition;
 import client.websocket.NotificationHandler;
 import client.websocket.ResponseException;
 import client.websocket.WebSocketFacade;
@@ -29,6 +32,9 @@ public class ChessClient implements NotificationHandler {
 
     public State getState(){
         return state;
+    }
+    public GamePlayState getGameState(){
+        return gameState;
     }
 
     public String eval(String input) {
@@ -110,8 +116,70 @@ public class ChessClient implements NotificationHandler {
         if (gameState == GamePlayState.OBSERVING){
             return "Error: You cannot make a move when observing a game.";
         }
-        ws.makeMove(authToken.authToken(), gameInteger);
+        String sMove = params[0].toLowerCase();
+        String eMove = params[1].toLowerCase();
+        ChessPiece.PieceType promotion = getPieceType(params);
+
+        char sCol = sMove.charAt(0);
+        char sRow = sMove.charAt(1);
+        ChessPosition startPos = decodeMove(sCol, sRow);
+
+        char eCol = eMove.charAt(0);
+        char eRow = eMove.charAt(1);
+        ChessPosition endPos = decodeMove(eCol, eRow);
+
+        ChessMove move = new ChessMove(startPos, endPos, promotion);
+
+        ws.makeMove(authToken.authToken(), gameInteger, move);
         return null;
+    }
+
+    private static ChessPiece.PieceType getPieceType(String[] params) {
+        ChessPiece.PieceType promotion = null;
+        if (params.length == 3){
+            String promotionString = params[2];
+            if (promotionString.contains("bishop")){
+                promotion = ChessPiece.PieceType.BISHOP;
+            }
+            if (promotionString.contains("queen")){
+                promotion = ChessPiece.PieceType.QUEEN;
+            }
+            if (promotionString.contains("rook")){
+                promotion = ChessPiece.PieceType.ROOK;
+            }
+            if (promotionString.contains("knight")){
+                promotion = ChessPiece.PieceType.KNIGHT;
+            }
+        }
+        return promotion;
+    }
+
+    private ChessPosition decodeMove(char columns, char rows){
+        int col;
+        switch (columns) {
+            case 'a' -> col = 1;
+            case 'b' -> col = 2;
+            case 'c' -> col = 3;
+            case 'd' -> col = 4;
+            case 'e' -> col = 5;
+            case 'f' -> col = 6;
+            case 'g' -> col = 7;
+            case 'h' -> col = 8;
+            default -> throw new IllegalArgumentException("Invalid column");
+        }
+        int row;
+        switch (rows) {
+            case '1' -> row = 1;
+            case '2' -> row = 2;
+            case '3' -> row = 3;
+            case '4' -> row = 4;
+            case '5' -> row = 5;
+            case '6' -> row = 6;
+            case '7' -> row = 7;
+            case '8' -> row = 8;
+            default -> throw new IllegalArgumentException("Invalid column");
+        }
+        return new ChessPosition(row, col);
     }
 
     private String leave() throws ResponseException {

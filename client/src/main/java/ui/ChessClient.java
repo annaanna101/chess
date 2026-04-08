@@ -1,5 +1,6 @@
 package ui;
 
+import chess.ChessGame;
 import chess.ChessMove;
 import chess.ChessPiece;
 import chess.ChessPosition;
@@ -21,6 +22,8 @@ public class ChessClient implements NotificationHandler {
     private State state = State.SIGNEDOUT;
     private AuthD authToken;
     private final WebSocketFacade ws;
+    private ChessGame currentGame;
+    private String teamColor;
 
     private GamePlayState gameState = GamePlayState.NOGAMEPLAY;
 
@@ -97,7 +100,6 @@ public class ChessClient implements NotificationHandler {
         if (gameState == GamePlayState.OBSERVING){
             return "Error: You cannot resign when observing a game.";
         }
-//        System.out.println("Are you sure you want to resign [Y/N]");
         ws.resignGame(authToken.authToken(), gameInteger);
         return null;
     }
@@ -184,7 +186,9 @@ public class ChessClient implements NotificationHandler {
 
     private String redraw() {
         //figure out if I need to return anything (like the team color)
-        return null;
+        ChessGame game = get
+        String teamColor =
+        return (teamColor, game);
     }
 
     public Integer getRealGameID(int seqId) {
@@ -298,6 +302,9 @@ public class ChessClient implements NotificationHandler {
             server.joinGame(request, authToken);
             gameState = GamePlayState.PLAYING;
             gameInteger = getRealGameID(seqId);
+            //figure out how to get a game
+            currentGame = null;
+            teamColor = playerColor;
             ws.joinedGame(authToken.authToken(), realGameId);
             return String.format("You have now joined Game: %s as Team: %s", seqId, request.playerColor().toUpperCase(Locale.ROOT));
         }
@@ -327,6 +334,9 @@ public class ChessClient implements NotificationHandler {
             }
             gameInteger = getRealGameID(seqId);
             gameState = GamePlayState.OBSERVING;
+            //figure out how to get a game
+            currentGame = null;
+            teamColor = "OBSERVE";
             ws.joinedGame(authToken.authToken(), game.gameID());
             return String.format("Observing game: %s (%s (white) vs %s (black))",
                     seqId,

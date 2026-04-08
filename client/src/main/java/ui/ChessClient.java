@@ -56,11 +56,11 @@ public class ChessClient implements NotificationHandler {
 
             if (gameState != GamePlayState.NOGAMEPLAY){
                 return switch (cmd) {
-                    case "Redraw Chess Board" -> redraw();
-                    case "Leave" -> leave();
-                    case "Make Move" -> makeMove(params);
-                    case "Resign" -> resign();
-                    case "Highlight Legal Moves" -> highlight();
+                    case "redraw" -> redraw();
+                    case "leave" -> leave();
+                    case "move" -> makeMove(params);
+                    case "resign" -> resign();
+                    case "highlight" -> highlight();
                     default ->  help();
                 };
             }
@@ -82,8 +82,11 @@ public class ChessClient implements NotificationHandler {
     }
 
     public void notify(NotificationMessage notification){
+//        if (notification != null){
+//            System.out.println(notification.getMessage());
+//        }
         System.out.println(notification.getMessage());
-        System.out.println(">>> ");
+//        System.out.println(">>> ");
     }
 
     private String highlight() {
@@ -104,7 +107,7 @@ public class ChessClient implements NotificationHandler {
         if (gameState == GamePlayState.OBSERVING){
             return "Error: You cannot resign when observing a game.";
         }
-        ws.resignGame(authToken.authToken(), getRealGameID(gameInteger));
+        ws.resignGame(authToken.authToken(), gameInteger);
         return null;
     }
 
@@ -183,16 +186,7 @@ public class ChessClient implements NotificationHandler {
     }
 
     private String leave() throws ResponseException {
-//        if (params.length != 1){
-//            return "Expected leave <gameID>";
-//        }
-//        int seqId;
-//        if (params[0].matches("^\\d+$")){
-//            seqId = Integer.parseInt(params[0]);
-//        } else {
-//            return "Invalid game ID. Use Integer";
-//        }
-        ws.leaveGame(authToken.authToken(), getRealGameID(gameInteger));
+        ws.leaveGame(authToken.authToken(), gameInteger);
         gameState = GamePlayState.NOGAMEPLAY;
         return null;
     }
@@ -376,9 +370,9 @@ public class ChessClient implements NotificationHandler {
             return """
                     redraw - Redraws the chess board
                     leave - Removes the user from the game
-                    make move - Allows the user to make a move
+                    move - Allows the user to make a move
                     resign - The user forfeits the game and the game is over
-                    highlight legal moves - Highlights all legal moves
+                    highlight - Highlights all legal moves
                     help - with possible game play commands
                     """;
         }

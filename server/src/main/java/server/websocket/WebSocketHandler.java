@@ -174,7 +174,8 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                 playerColor = "WHITE";
                 isPlayer = true;
             }
-        } else if (game.getBlackUsername() == null){
+        }
+        if (game.getBlackUsername() != null){
             if (game.getBlackUsername().equals(username)) {
                 playerColor = "BLACK";
                 isPlayer = true;

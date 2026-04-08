@@ -22,32 +22,35 @@ public class GamePlayRepl {
         Scanner scanner = new Scanner(System.in);
         String result = "";
 
-        while (client.getState() == State.SIGNEDIN) {
-            while (client.getGameState() != GamePlayState.NOGAMEPLAY){
-                printPrompt();
-                String line = scanner.nextLine();
-                result = client.eval(line);
-                if (result != null){
-                    System.out.println(result);
-                }
-                if("leave".equals(result)){
-                    new PostLoginRepl(client).run();
-                }
-                if (line.startsWith("redraw")){
+        while (client.getState() == State.SIGNEDIN && client.getGameState() != GamePlayState.NOGAMEPLAY) {
+            printPrompt();
+            String line = scanner.nextLine();
+            result = client.eval(line);
+            if (result != null){
+                System.out.println(result);
+            }
+            if (client.getGameState() == GamePlayState.NOGAMEPLAY){
+//                    new PostLoginRepl(client).run();
+                return;
+            }
+            if (line.startsWith("redraw")){
 //                    String[] tokens = line.split(" ");
 //                    String color = tokens[2];
 //                    //figure out how to get color
 //                    DrawBoard.drawCorrectBoard(color);
-                    System.out.println("redraw board");
-                }
-                if (line.startsWith("highlight")){
-                    String[] tokens = line.split(" ");
-                    String color = tokens[2];
-                    //make higlightboard
-//                DrawBoard.drawHighlightBoard(color);
-                    System.out.println("draw highlighted board");
-                }
+                System.out.println("redraw board");
             }
+            if (line.startsWith("resign")){
+                System.out.println("Are you sure you want to resign [Y/N]");
+            }
+            if (line.startsWith("highlight")){
+                String[] tokens = line.split(" ");
+                String color = tokens[2];
+                //make higlightboard
+//                DrawBoard.drawHighlightBoard(color);
+                System.out.println("draw highlighted board");
+            }
+
         }
     }
 

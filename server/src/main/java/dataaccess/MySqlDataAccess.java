@@ -15,6 +15,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.UUID;
 import java.sql.*;
 
@@ -190,7 +191,7 @@ public class MySqlDataAccess implements DataAccess{
             throw new DataAccessException("Error: bad request");
         }
         if (playerColor.equals("WHITE")){
-            if (game.getWhiteUsername() != null) {
+            if (game.getWhiteUsername() != null && !Objects.equals(game.getWhiteUsername(), username)) {
                 throw new DataAccessException("Error: already taken");
             }
             var statement = "UPDATE game SET whiteUsername=?, game=? WHERE gameID=?";
@@ -199,7 +200,7 @@ public class MySqlDataAccess implements DataAccess{
             String json = new Gson().toJson(updatedGame);
             executeUpdate(statement, username, json, gameID);
         } else {
-            if (game.getBlackUsername() != null) {
+            if (game.getBlackUsername() != null && !Objects.equals(game.getBlackUsername(), username)) {
                 throw new DataAccessException("Error: already taken");
             }
             var statement = "UPDATE game SET blackUsername=?, game=? WHERE gameID=?";
@@ -222,7 +223,8 @@ public class MySqlDataAccess implements DataAccess{
             GameD updatedGame = new GameD(gameID, username, game.getBlackUsername(), game.getGameName(), gameBoard);
             String json = new Gson().toJson(updatedGame);
             executeUpdate(statement, username, json, gameID);
-        } else {
+        }
+        if (playerColor.equals("BLACK")) {
             var statement = "UPDATE game SET blackUsername=?, game=? WHERE gameID=?";
             ChessGame gameBoard = game.getGame();
             GameD updatedGame = new GameD(gameID, game.getWhiteUsername(), username, game.getGameName(), gameBoard);

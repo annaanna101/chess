@@ -17,7 +17,6 @@ import java.util.Map;
 
 public class ChessClient implements NotificationHandler {
     private final ServerFacade server;
-//    private String clientName = null;
     private Integer gameInteger = -1;
     private State state = State.SIGNEDOUT;
     private AuthD authToken;
@@ -94,24 +93,16 @@ public class ChessClient implements NotificationHandler {
         return null;
     }
 
-    private String resign() throws ResponseException {
-//        if (params.length != 1){
-//            return "Expected resign <gameID>";
-//        }
-//        int gameID;
-//        if (params[0].matches("^\\d+$")){
-//            gameID = Integer.parseInt(params[0]);
-//        } else {
-//            return "Invalid game ID. Use Integer";
-//        }
+    public String resign() throws ResponseException {
         if (gameState == GamePlayState.OBSERVING){
             return "Error: You cannot resign when observing a game.";
         }
+//        System.out.println("Are you sure you want to resign [Y/N]");
         ws.resignGame(authToken.authToken(), gameInteger);
         return null;
     }
 
-    private String makeMove(String[] params) throws ResponseException {
+    public String makeMove(String[] params) throws ResponseException {
         //figure out where to pass in move
         //figure out how to change user input into computer input.
         //figure out how to map values (a -> 1, b -> 8)

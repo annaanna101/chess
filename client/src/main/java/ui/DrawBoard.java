@@ -45,13 +45,14 @@ public class DrawBoard {
     public static final String BLACK_ROOK = " r ";
     public static final String BLACK_PAWN = " p ";
 
-    private boolean isHighlight = false;
 
-    static void drawCorrectBoard(String color, ChessGame game, ChessPosition start) {
+    static void drawCorrectBoard(String color, ChessGame game, ChessPosition start, HighlightState state) {
         var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
         ChessBoard board = game.getBoard();
-        Collection<ChessMove> moves = game.validMoves(start);
-
+        Collection<ChessMove> moves = null;
+        if (start != null && state == HighlightState.HIGHLIGHT){
+            moves = game.validMoves(start);
+        }
         out.print(ERASE_SCREEN);
         if (color.toUpperCase().contains("WHITE") || color.toUpperCase().contains("OBSERVE")){
             drawHeaders(out);
@@ -100,18 +101,19 @@ public class DrawBoard {
         boolean highlight = false;
         ChessPiece piecePos = board.getPiece(new ChessPosition(row+1, col+1));
         String piece = getPiece(piecePos);
-
-        for (ChessMove move: moves){
-            ChessPosition end = move.getEndPosition();
-            int endRow = end.getRow();
-            int endCol = end.getColumn();
-            if (row+1 == endRow && col+1 == endCol){
-                highlight = true;
-                break;
-            }
-            if (row+1 == move.getStartPosition().getRow() && col+1 == move.getStartPosition().getColumn()){
-                highlight = true;
-                break;
+        if (moves != null){
+            for (ChessMove move: moves){
+                ChessPosition end = move.getEndPosition();
+                int endRow = end.getRow();
+                int endCol = end.getColumn();
+                if (row+1 == endRow && col+1 == endCol){
+                    highlight = true;
+                    break;
+                }
+                if (row+1 == move.getStartPosition().getRow() && col+1 == move.getStartPosition().getColumn()){
+                    highlight = true;
+                    break;
+                }
             }
         }
         if (highlight){

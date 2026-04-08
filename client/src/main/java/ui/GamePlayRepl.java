@@ -1,17 +1,16 @@
 package ui;
 
 import chess.ChessGame;
+import chess.ChessPosition;
 import client.websocket.ResponseException;
 
 import java.util.Scanner;
 
 public class GamePlayRepl {
     private final ChessClient client;
-    private final Integer gameID;
 
-    public GamePlayRepl(ChessClient client, Integer gameID) {
+    public GamePlayRepl(ChessClient client) {
         this.client = client;
-        this.gameID = gameID;
     }
     private void printPrompt() {
         System.out.print("\n[GAMEPLAY] >>> ");
@@ -35,11 +34,7 @@ public class GamePlayRepl {
                 return;
             }
             if (line.startsWith("redraw")){
-//                    String[] tokens = line.split(" ");
-//                    String color = tokens[2];
-//                    //figure out how to get color
-//                    DrawBoard.drawCorrectBoard(color);
-                System.out.println("redraw board");
+                DrawBoard.drawCorrectBoard(client.getTeamColor(), client.getCurrentGame(), null, HighlightState.NOHIGHLIGHT);
             }
             if (line.startsWith("resign")){
                 System.out.println("Are you sure you want to resign [Y/N]");
@@ -59,10 +54,12 @@ public class GamePlayRepl {
             }
             if (line.startsWith("highlight")){
                 String[] tokens = line.split(" ");
-                String color = tokens[2];
-                //make higlightboard
-//                DrawBoard.drawHighlightBoard(color);
-                System.out.println("draw highlighted board");
+                if (tokens[0] != null){
+                    ChessPosition start = client.highlight(tokens);
+                    DrawBoard.drawCorrectBoard(client.getTeamColor(), client.getCurrentGame(), start, HighlightState.HIGHLIGHT);
+                } else {
+                    System.out.print("Error: Expected [piece location]");
+                }
             }
 
         }

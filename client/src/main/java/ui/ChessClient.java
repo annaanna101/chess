@@ -32,6 +32,11 @@ public class ChessClient implements NotificationHandler {
         server = new ServerFacade(serverUrl);
     }
 
+    /* TO DO LIST
+    - look into how to get a game from the server
+    - look into altering the database to include a game state
+     */
+
     public State getState(){
         return state;
     }
@@ -58,11 +63,11 @@ public class ChessClient implements NotificationHandler {
 
             if (gameState != GamePlayState.NOGAMEPLAY){
                 return switch (cmd) {
-                    case "redraw" -> redraw();
+//                    case "redraw" -> redraw();
                     case "leave" -> leave();
                     case "move" -> makeMove(params);
-                    case "resign" -> resign();
-                    case "highlight" -> highlight();
+//                    case "resign" -> resign();
+//                    case "highlight" -> highlight(params);
                     default ->  help();
                 };
             }
@@ -91,24 +96,24 @@ public class ChessClient implements NotificationHandler {
 //        System.out.println(">>> ");
     }
 
-    private String highlight() {
-        //figure out if I need to return anything (like the team color)
-        return null;
+    public ChessPosition highlight(String[] params) {
+        if (params.length != 1){
+            return null;
+        }
+        String sMove = params[0].toLowerCase();
+        char sCol = sMove.charAt(0);
+        char sRow = sMove.charAt(1);
+        return decodeMove(sCol, sRow);
     }
 
-    public String resign() throws ResponseException {
+    public void resign() throws ResponseException {
         if (gameState == GamePlayState.OBSERVING){
-            return "Error: You cannot resign when observing a game.";
+            return;
         }
         ws.resignGame(authToken.authToken(), gameInteger);
-        return null;
     }
 
     public String makeMove(String[] params) throws ResponseException {
-        //figure out where to pass in move
-        //figure out how to change user input into computer input.
-        //figure out how to map values (a -> 1, b -> 8)
-        //see if the moves are different depending on the board in the computer
         if (gameState == GamePlayState.OBSERVING){
             return "Error: You cannot make a move when observing a game.";
         }
@@ -184,12 +189,11 @@ public class ChessClient implements NotificationHandler {
         return null;
     }
 
-    private String redraw() {
-        //figure out if I need to return anything (like the team color)
-        ChessGame game = get
-        String teamColor =
-        return (teamColor, game);
-    }
+//    private String redraw() {
+//        //figure out if I need to return anything (like the team color)
+//        ChessGame game = get
+//        return (teamColor, game);
+//    }
 
     public Integer getRealGameID(int seqId) {
         GameSummary game = gameMap.get(seqId);
@@ -348,6 +352,14 @@ public class ChessClient implements NotificationHandler {
         } catch (ResponseException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public ChessGame getCurrentGame(){
+        return currentGame;
+    }
+
+    public String getTeamColor() {
+        return teamColor;
     }
 
     public String logout(){

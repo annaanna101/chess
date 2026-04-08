@@ -1,5 +1,7 @@
 package ui;
 
+import chess.ChessGame;
+
 import java.util.Scanner;
 
 public class PostLoginRepl {
@@ -43,13 +45,15 @@ public class PostLoginRepl {
                 if (result != null && !result.contains("Error")){
                     if (tokens.length >= 3){
                         String color = tokens[2];
-                        DrawBoard.drawCorrectBoard(color);
+                        ChessGame game = client.getCurrentGame();
+                        DrawBoard.drawCorrectBoard(color, game, null, HighlightState.NOHIGHLIGHT);
                     } else {
                         String color = tokens[0];
-                        DrawBoard.drawCorrectBoard(color);
+                        ChessGame game = client.getCurrentGame();
+                        DrawBoard.drawCorrectBoard(color, game, null, HighlightState.NOHIGHLIGHT);
                     }
                 }
-                new GamePlayRepl(client, realGameID).run();
+                new GamePlayRepl(client).run();
             }
         }
     }

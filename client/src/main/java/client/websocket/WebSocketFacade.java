@@ -32,25 +32,20 @@ public class WebSocketFacade extends Endpoint {
             this.session.addMessageHandler(new MessageHandler.Whole<String>() {
                 @Override
                 public void onMessage(String message) {
-                    try {
-                        ServerMessage messageType = new Gson().fromJson(message, ServerMessage.class);
-                        switch (messageType.getServerMessageType()){
-                            case LOAD_GAME -> {
-                                LoadGameMessage load = new Gson().fromJson(message, LoadGameMessage.class);
-                                notificationHandler.notifyLoadGame(load);
-                            }
-                            case ERROR -> {
-                                ErrorMessage error = new Gson().fromJson(message, ErrorMessage.class);
-                                notificationHandler.notifyError(error);
-                            }
-                            case NOTIFICATION -> {
-                                NotificationMessage notification = new Gson().fromJson(message, NotificationMessage.class);
-                                notificationHandler.notify(notification);
-                            }
+                    ServerMessage messageType = new Gson().fromJson(message, ServerMessage.class);
+                    switch (messageType.getServerMessageType()) {
+                        case LOAD_GAME -> {
+                            LoadGameMessage load = new Gson().fromJson(message, LoadGameMessage.class);
+                            notificationHandler.notifyLoadGame(load);
                         }
-                    } catch (Exception e){
-                        System.out.println("Failed to parse" + message);
-                        e.printStackTrace();
+                        case ERROR -> {
+                            ErrorMessage error = new Gson().fromJson(message, ErrorMessage.class);
+                            notificationHandler.notifyError(error);
+                        }
+                        case NOTIFICATION -> {
+                            NotificationMessage notification = new Gson().fromJson(message, NotificationMessage.class);
+                            notificationHandler.notify(notification);
+                        }
                     }
                 }
             });

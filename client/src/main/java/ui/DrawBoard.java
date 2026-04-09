@@ -173,7 +173,7 @@ public class DrawBoard {;
     }
 
     private static String getPiece(ChessPiece piece) {
-        if (piece == null) return EMPTY;
+        if (piece == null) {return EMPTY;}
 
         switch(piece.getPieceType()){
             case QUEEN -> {

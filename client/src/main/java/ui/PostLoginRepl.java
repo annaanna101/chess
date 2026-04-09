@@ -42,17 +42,6 @@ public class PostLoginRepl {
                     System.out.println("Invalid game ID. Make sure to run 'list' first.");
                     continue;
                 }
-//                if (result != null && !result.contains("Error")){
-//                    if (tokens.length >= 3){
-//                        String color = tokens[2];
-//                        ChessGame game = client.getCurrentGame();
-//                        DrawBoard.drawCorrectBoard(color, game, null, HighlightState.NOHIGHLIGHT);
-//                    } else {
-//                        String color = tokens[0];
-//                        ChessGame game = client.getCurrentGame();
-//                        DrawBoard.drawCorrectBoard(color, game, null, HighlightState.NOHIGHLIGHT);
-//                    }
-//                }
                 new GamePlayRepl(client).run();
             }
         }

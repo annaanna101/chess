@@ -116,9 +116,11 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             chessGame.makeMove(move);
             dao.updateChessBoard(gameID, game, chessGame, game.getGameStatus());
             if (chessGame.isInCheck(opponent)){
-                connections.broadcast(gameID, null, new NotificationMessage(NotificationMessage.Type.MAKE_MOVE, String.format("%s is in check.", username)));
+                connections.broadcast(gameID, null, new NotificationMessage(
+                        NotificationMessage.Type.MAKE_MOVE, String.format("%s is in check.", username)));
             } else if (chessGame.isInCheckmate(opponent)){
-                connections.broadcast(gameID, null, new NotificationMessage(NotificationMessage.Type.MAKE_MOVE, String.format("%s is in checkmate.", username)));
+                connections.broadcast(gameID, null, new NotificationMessage(
+                        NotificationMessage.Type.MAKE_MOVE, String.format("%s is in checkmate.", username)));
                 dao.updateChessBoard(gameID, game, chessGame, "Completed");
 //                listOfCompletedGames.put(gameID, username);
             } else if (chessGame.isInStalemate(teamColor)){
@@ -202,7 +204,8 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         }
         boolean isRemoved = connections.remove(gameID, session);
         if(isRemoved){
-            connections.broadcast(gameID, session, new NotificationMessage(NotificationMessage.Type.LEAVE, String.format("%s left the game", username)));
+            connections.broadcast(gameID, session, new NotificationMessage(
+                    NotificationMessage.Type.LEAVE, String.format("%s left the game", username)));
         }
     }
 

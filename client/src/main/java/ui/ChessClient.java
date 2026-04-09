@@ -31,10 +31,6 @@ public class ChessClient implements NotificationHandler {
         server = new ServerFacade(serverUrl);
     }
 
-    /* TO DO LIST
-    - look into altering the database to include a game state
-    - fix resign
-     */
 
     public State getState(){
         return state;

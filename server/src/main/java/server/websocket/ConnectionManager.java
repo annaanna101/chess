@@ -14,7 +14,7 @@ public class ConnectionManager {
     public final Map<Integer, List<Session>> connections = new HashMap<>();
 
     public synchronized void add(Integer gameID, Session session) {
-        connections.computeIfAbsent(gameID, _ -> new ArrayList<>()).add(session);
+        connections.computeIfAbsent(gameID, key -> new ArrayList<>()).add(session);
     }
 
     public synchronized boolean remove(Integer gameID, Session session) {

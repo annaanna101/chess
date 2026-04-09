@@ -9,6 +9,8 @@ import client.websocket.ResponseException;
 import client.websocket.WebSocketFacade;
 import model.*;
 import server.ServerFacade;
+import websocket.messages.ErrorMessage;
+import websocket.messages.LoadGameMessage;
 import websocket.messages.NotificationMessage;
 
 import java.util.Arrays;
@@ -33,8 +35,8 @@ public class ChessClient implements NotificationHandler {
     }
 
     /* TO DO LIST
-    - look into how to get a game from the server
     - look into altering the database to include a game state
+    - fix resign
      */
 
     public State getState(){
@@ -89,11 +91,24 @@ public class ChessClient implements NotificationHandler {
     }
 
     public void notify(NotificationMessage notification){
-//        if (notification != null){
-//            System.out.println(notification.getMessage());
-//        }
-        System.out.println(notification.getMessage());
-//        System.out.println(">>> ");
+        synchronized (System.out){
+            System.out.println(notification.getMessage());
+        }
+    }
+    public void notifyLoadGame(LoadGameMessage message){
+        synchronized (System.out){
+            ChessGame game = message.getGame();
+            this.currentGame = game;
+            System.out.println("\n");
+            DrawBoard.drawCorrectBoard(teamColor, game, null, HighlightState.NOHIGHLIGHT);
+        }
+
+    }
+
+    public void notifyError(ErrorMessage error){
+        synchronized (System.out){
+            System.out.println(error.getMessage());
+        }
     }
 
     public String highlight(String[] params) {
@@ -144,6 +159,8 @@ public class ChessClient implements NotificationHandler {
         ChessPosition endPos = decodeMove(eCol, eRow);
         ChessMove move = new ChessMove(startPos, endPos, promotion);
         ws.makeMove(authToken.authToken(), gameInteger, move);
+        //not sure about this line
+        //also test to make sure you can promote
         currentGame = server.getGame(authToken, new GameRequest(gameInteger));
         return "";
     }

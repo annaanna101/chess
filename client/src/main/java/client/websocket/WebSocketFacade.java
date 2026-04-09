@@ -5,7 +5,10 @@ import com.google.gson.Gson;
 import jakarta.websocket.*;
 import websocket.commands.MakeMoveCommand;
 import websocket.commands.UserGameCommand;
+import websocket.messages.ErrorMessage;
+import websocket.messages.LoadGameMessage;
 import websocket.messages.NotificationMessage;
+import websocket.messages.ServerMessage;
 
 import java.io.IOException;
 import java.net.URI;
@@ -15,6 +18,8 @@ public class WebSocketFacade extends Endpoint {
 
     Session session;
     NotificationHandler notificationHandler;
+//    ErrorHandler errorHandler;
+//    LoadGameHandler loadGameHandler;
 
     public WebSocketFacade(String url, NotificationHandler notificationHandler) throws ResponseException {
         try {
@@ -29,8 +34,26 @@ public class WebSocketFacade extends Endpoint {
             this.session.addMessageHandler(new MessageHandler.Whole<String>() {
                 @Override
                 public void onMessage(String message) {
-                    NotificationMessage notification = new Gson().fromJson(message, NotificationMessage.class);
-                    notificationHandler.notify(notification);
+                    try {
+                        ServerMessage messageType = new Gson().fromJson(message, ServerMessage.class);
+                        switch (messageType.getServerMessageType()){
+                            case LOAD_GAME -> {
+                                LoadGameMessage load = new Gson().fromJson(message, LoadGameMessage.class);
+                                notificationHandler.notifyLoadGame(load);
+                            }
+                            case ERROR -> {
+                                ErrorMessage error = new Gson().fromJson(message, ErrorMessage.class);
+                                notificationHandler.notifyError(error);
+                            }
+                            case NOTIFICATION -> {
+                                NotificationMessage notification = new Gson().fromJson(message, NotificationMessage.class);
+                                notificationHandler.notify(notification);
+                            }
+                        }
+                    } catch (Exception e){
+                        System.out.println("Failed to parse" + message);
+                        e.printStackTrace();
+                    }
                 }
             });
         } catch (DeploymentException | IOException | URISyntaxException ex) {
@@ -54,8 +77,6 @@ public class WebSocketFacade extends Endpoint {
 
     public void makeMove(String auth, Integer gameID, ChessMove move) throws ResponseException{
         try {
-//            var connect = new UserGameCommand(UserGameCommand.CommandType.CONNECT, visitorName, game.gameID());
-//            this.session.getBasicRemote().sendText(new Gson().toJson(connect));
             var command = new MakeMoveCommand(auth, gameID, move);
             this.session.getBasicRemote().sendText(new Gson().toJson(command));
         } catch (IOException ex) {
@@ -65,9 +86,6 @@ public class WebSocketFacade extends Endpoint {
 
     public void leaveGame(String auth, Integer gameID) throws ResponseException{
         try {
-            //leave game command
-//            var connect = new UserGameCommand(UserGameCommand.CommandType.CONNECT, visitorName, game.gameID());
-//            this.session.getBasicRemote().sendText(new Gson().toJson(connect));
             var leave = new UserGameCommand(UserGameCommand.CommandType.LEAVE, auth, gameID);
             this.session.getBasicRemote().sendText(new Gson().toJson(leave));
         } catch (IOException ex) {
@@ -77,8 +95,6 @@ public class WebSocketFacade extends Endpoint {
 
     public void resignGame(String auth, Integer gameID) throws ResponseException{
         try {
-//            var connect = new UserGameCommand(UserGameCommand.CommandType.CONNECT, visitorName, game.gameID());
-//            this.session.getBasicRemote().sendText(new Gson().toJson(connect));
             var resign = new UserGameCommand(UserGameCommand.CommandType.RESIGN, auth, gameID);
             this.session.getBasicRemote().sendText(new Gson().toJson(resign));
         } catch (IOException ex) {

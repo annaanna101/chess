@@ -9,7 +9,7 @@ import java.util.Objects;
  * methods.
  */
 public class ServerMessage {
-    ServerMessageType serverMessageType;
+    public ServerMessageType serverMessageType;
 
     public enum ServerMessageType {
         //Required fields: game (can be any type, just needs to be called game).

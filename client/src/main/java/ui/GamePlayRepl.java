@@ -13,7 +13,9 @@ public class GamePlayRepl {
         this.client = client;
     }
     private void printPrompt() {
-        System.out.print("\n[GAMEPLAY] >>> ");
+        synchronized (System.out){
+            System.out.print("\n[GAMEPLAY] >>> ");
+        }
     }
 
     public void run() {

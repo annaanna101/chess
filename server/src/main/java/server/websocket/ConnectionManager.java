@@ -17,6 +17,7 @@ public class ConnectionManager {
         connections.computeIfAbsent(gameID, key -> new ArrayList<>()).add(session);
     }
 
+
     public synchronized boolean remove(Integer gameID, Session session) {
         List<Session> sessions = connections.get(gameID);
         if (sessions == null){

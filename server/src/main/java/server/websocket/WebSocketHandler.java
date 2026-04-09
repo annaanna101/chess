@@ -30,7 +30,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     private final ConnectionManager connections = new ConnectionManager();
     private MySqlDataAccess dao;
     private Gson gson = new Gson();
-    private Map<Integer, String> listOfCompletedGames = new HashMap<>();
+//    private Map<Integer, String> listOfCompletedGames = new HashMap<>();
 
     public WebSocketHandler(DataAccess dao) {
         this.dao = (MySqlDataAccess) dao;
@@ -99,8 +99,13 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             sendMessage(session, new ErrorMessage("Cannot make a move. User is observing"));
             return;
         }
-        if (listOfCompletedGames.get(gameID) != null){
+        System.out.println(game.getGameStatus());
+        if (game.getGameStatus().contains("Resigned")){
             sendMessage(session, new ErrorMessage("Error: This game has already been resigned."));
+            return;
+        }
+        if (game.getGameStatus().contains("Completed")){
+            sendMessage(session, new ErrorMessage("Error: This game has already been completed."));
             return;
         }
         if (teamColor != chessGame.getTeamTurn()){
@@ -109,14 +114,16 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         }
         try {
             chessGame.makeMove(move);
-            dao.updateChessBoard(gameID, game, chessGame);
+            dao.updateChessBoard(gameID, game, chessGame, game.getGameStatus());
             if (chessGame.isInCheck(opponent)){
                 connections.broadcast(gameID, null, new NotificationMessage(NotificationMessage.Type.MAKE_MOVE, String.format("%s is in check.", username)));
             } else if (chessGame.isInCheckmate(opponent)){
                 connections.broadcast(gameID, null, new NotificationMessage(NotificationMessage.Type.MAKE_MOVE, String.format("%s is in checkmate.", username)));
-                listOfCompletedGames.put(gameID, username);
+                dao.updateChessBoard(gameID, game, chessGame, "Completed");
+//                listOfCompletedGames.put(gameID, username);
             } else if (chessGame.isInStalemate(teamColor)){
-                listOfCompletedGames.put(gameID,username);
+                dao.updateChessBoard(gameID, game, chessGame, "Completed");
+//                listOfCompletedGames.put(gameID,username);
             }
         } catch (InvalidMoveException e){
             sendMessage(session, new ErrorMessage("Invalid move: " + e.getMessage()));
@@ -139,15 +146,17 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     private synchronized void resign(Session session, String username, ResignCommand command) throws IOException, DataAccessException {
         Integer gameId = command.getGameID();
         GameD game = dao.getGame(gameId);
-        if (listOfCompletedGames.get(gameId) != null){
+        String status = game.getGameStatus();
+        if (status.contains("Resigned")){
             sendMessage(session, new ErrorMessage("Error: This game has already been resigned."));
             return;
         }
-        if (!game.getBlackUsername().contains(username) && !game.getWhiteUsername().contains(username)){
-            sendMessage(session, new ErrorMessage(String.format("Error: %s is not playing, so game cannot be resigned", username)));
+        if (status.contains("Completed")){
+            sendMessage(session, new ErrorMessage("Error: This game has already been completed."));
             return;
         }
-        listOfCompletedGames.put(gameId, username);
+        game.setStatus("Resigned");
+        dao.updateGameStatus(gameId, game.getGameStatus());
         sendMessage(session, new NotificationMessage(NotificationMessage.Type.RESIGN, String.format("%s has resigned the game. Congratulations!", username)));
         connections.broadcast(gameId, session, new NotificationMessage(NotificationMessage.Type.RESIGN, String.format("%s has resigned the game. Congratulations!", username)));
         connections.remove(gameId, session);

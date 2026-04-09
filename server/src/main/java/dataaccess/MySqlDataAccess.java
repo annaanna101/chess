@@ -86,7 +86,8 @@ public class MySqlDataAccess implements DataAccess{
                                 game.getGameID(),
                                 game.getWhiteUsername(),
                                 game.getBlackUsername(),
-                                game.getGameName()
+                                game.getGameName(),
+                                game.getGameStatus()
                         ));
                     }
                 }
@@ -160,30 +161,32 @@ public class MySqlDataAccess implements DataAccess{
     }
 
     public int createGame(String gameName) throws DataAccessException {
-        var statement = "INSERT INTO game (whiteUsername, blackUsername, gameName, game) VALUES (?, ?, ?, ?)";
+        var statement = "INSERT INTO game (whiteUsername, blackUsername, gameName, game, status) VALUES (?, ?, ?, ?, ?)";
         ChessGame chessGame = new ChessGame();
-        GameD newGame = new GameD(null,null, null, gameName, chessGame);
+        String status = "In-Play";
+        GameD newGame = new GameD(null,null, null, gameName, chessGame, status);
         String json = new Gson().toJson(newGame);
 
         int id =  executeUpdate(
                 statement, null,
-                null, newGame.getGameName(), json
+                null, newGame.getGameName(), json, status
         );
-        GameD updatedGame = new GameD(id, null, null, gameName, chessGame);
+        GameD updatedGame = new GameD(id, null, null, gameName, chessGame, status);
         String updatedJson = new Gson().toJson(updatedGame);
         executeUpdate("UPDATE game SET game=? WHERE gameID=?", updatedJson, id);
 
         return id;
     }
     // create a new function that actually updates the game
-    public void updateChessBoard (Integer gameID, GameD game, ChessGame gameBoard) throws DataAccessException{
-        GameD updatedGame = new GameD(gameID, game.getWhiteUsername(), game.getBlackUsername(), game.getGameName(), gameBoard);
+    public void updateChessBoard (Integer gameID, GameD game, ChessGame gameBoard, String status) throws DataAccessException{
+        GameD updatedGame = new GameD(gameID, game.getWhiteUsername(), game.getBlackUsername(), game.getGameName(), gameBoard, status);
         String json = new Gson().toJson(updatedGame);
         var statement = "UPDATE game SET game=? WHERE gameID=?";
         executeUpdate(statement, json, gameID);
     }
     public void updateGame(Integer gameID, String playerColor, String username) throws DataAccessException {
         GameD game = getGame(gameID);
+        String status = game.getGameStatus();
         if (game == null) {
             throw new DataAccessException("Error: Game not found");
         }
@@ -196,7 +199,7 @@ public class MySqlDataAccess implements DataAccess{
             }
             var statement = "UPDATE game SET whiteUsername=?, game=? WHERE gameID=?";
             ChessGame gameBoard = game.getGame();
-            GameD updatedGame = new GameD(gameID, username, game.getBlackUsername(), game.getGameName(), gameBoard);
+            GameD updatedGame = new GameD(gameID, username, game.getBlackUsername(), game.getGameName(), gameBoard, status);
             String json = new Gson().toJson(updatedGame);
             executeUpdate(statement, username, json, gameID);
         } else {
@@ -205,10 +208,19 @@ public class MySqlDataAccess implements DataAccess{
             }
             var statement = "UPDATE game SET blackUsername=?, game=? WHERE gameID=?";
             ChessGame gameBoard = game.getGame();
-            GameD updatedGame = new GameD(gameID, game.getWhiteUsername(), username, game.getGameName(), gameBoard);
+            GameD updatedGame = new GameD(gameID, game.getWhiteUsername(), username, game.getGameName(), gameBoard, status);
             String json = new Gson().toJson(updatedGame);
             executeUpdate(statement, username, json, gameID);
         }
+    }
+
+    public void updateGameStatus(Integer gameID, String status) throws DataAccessException {
+        var statement = "UPDATE game SET status=?, game=? WHERE gameID=?";
+        GameD game = getGame(gameID);
+        ChessGame gameBoard = game.getGame();
+        GameD updatedGame = new GameD(gameID, game.getWhiteUsername(), game.getBlackUsername(), game.getGameName(), gameBoard, status);
+        String json = new Gson().toJson(updatedGame);
+        executeUpdate(statement, status, json, gameID);
     }
 
     //added for leave game
@@ -220,14 +232,14 @@ public class MySqlDataAccess implements DataAccess{
         if (playerColor.equals("WHITE")){
             var statement = "UPDATE game SET whiteUsername=?, game=? WHERE gameID=?";
             ChessGame gameBoard = game.getGame();
-            GameD updatedGame = new GameD(gameID, username, game.getBlackUsername(), game.getGameName(), gameBoard);
+            GameD updatedGame = new GameD(gameID, username, game.getBlackUsername(), game.getGameName(), gameBoard, game.getGameStatus());
             String json = new Gson().toJson(updatedGame);
             executeUpdate(statement, username, json, gameID);
         }
         if (playerColor.equals("BLACK")) {
             var statement = "UPDATE game SET blackUsername=?, game=? WHERE gameID=?";
             ChessGame gameBoard = game.getGame();
-            GameD updatedGame = new GameD(gameID, game.getWhiteUsername(), username, game.getGameName(), gameBoard);
+            GameD updatedGame = new GameD(gameID, game.getWhiteUsername(), username, game.getGameName(), gameBoard, game.getGameStatus());
             String json = new Gson().toJson(updatedGame);
             executeUpdate(statement, username, json, gameID);
         }
@@ -321,6 +333,7 @@ public class MySqlDataAccess implements DataAccess{
               `blackUsername` varchar(256),
               `gameName` varchar(256) NOT NULL UNIQUE,
               `game` JSON NOT NULL,
+              `status` varchar(256),
               PRIMARY KEY (`gameID`),
               INDEX(whiteUsername),
               INDEX(blackUsername),

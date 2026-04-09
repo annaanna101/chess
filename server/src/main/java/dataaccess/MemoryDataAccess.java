@@ -39,13 +39,13 @@ public class MemoryDataAccess implements DataAccess{
                         game.getGameID(),
                         game.getWhiteUsername(),
                         game.getBlackUsername(),
-                        game.getGameName()
-                ))
+                        game.getGameName(),
+                        game.getGameStatus()))
                 .toList();
     }
     public int createGame(String gameName){
         ChessGame chessGame = new ChessGame();
-        GameD newGame = new GameD(nextGameId, null, null, gameName, chessGame);
+        GameD newGame = new GameD(nextGameId, null, null, gameName, chessGame, "In-Play");
         games.put(nextGameId, newGame);
         nextGameId ++;
         return newGame.getGameID();

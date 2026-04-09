@@ -4,5 +4,5 @@ public record GameSummary(
         int gameID,
         String whiteUsername,
         String blackUsername,
-        String gameName
-) {}
+        String gameName,
+        String gameStatus) {}

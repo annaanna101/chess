@@ -120,7 +120,7 @@ public class ChessClient implements NotificationHandler {
         return "";
     }
 
-    public String resign() throws ResponseException {
+    public String resign() {
         if (gameState == GamePlayState.OBSERVING){
             return "ERROR: You are Observing, so you cannot resign.";
         }
@@ -170,8 +170,6 @@ public class ChessClient implements NotificationHandler {
         ChessPosition endPos = decodeMove(eCol, eRow);
         ChessMove move = new ChessMove(startPos, endPos, promotion);
         ws.makeMove(authToken.authToken(), gameInteger, move);
-        //not sure about this line
-        //also test to make sure you can promote
         currentGame = server.getGame(authToken, new GameRequest(gameInteger));
         return "";
     }
@@ -317,12 +315,14 @@ public class ChessClient implements NotificationHandler {
 
             sb.append("Game Name: ")
                     .append(game.gameName())
-                    .append("  Game ID: ")
+                    .append("   Game ID: ")
                     .append(i)
-                    .append("  White Player: ")
+                    .append("   White Player: ")
                     .append(game.whiteUsername())
-                    .append("  Black Player: ")
+                    .append("   Black Player: ")
                     .append(game.blackUsername())
+                    .append("   Game Status: ")
+                    .append(game.gameStatus())
                     .append("\n");
 
             i++;
@@ -395,14 +395,6 @@ public class ChessClient implements NotificationHandler {
         } catch (ResponseException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    public ChessGame getCurrentGame(){
-        return currentGame;
-    }
-
-    public String getTeamColor() {
-        return teamColor;
     }
 
     public String logout(){

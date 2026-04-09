@@ -13,10 +13,7 @@ import websocket.messages.ErrorMessage;
 import websocket.messages.LoadGameMessage;
 import websocket.messages.NotificationMessage;
 
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 public class ChessClient implements NotificationHandler {
     private final ServerFacade server;
@@ -127,7 +124,21 @@ public class ChessClient implements NotificationHandler {
         if (gameState == GamePlayState.OBSERVING){
             return "ERROR: You are Observing, so you cannot resign.";
         }
-        ws.resignGame(authToken.authToken(), gameInteger);
+        System.out.println("Are you sure you want to resign [Y/N]");
+        Scanner scanner = new Scanner(System.in);
+        String confirm = scanner.nextLine().trim().toUpperCase();
+
+        if(confirm.equals("Y")){
+            try{
+                ws.resignGame(authToken.authToken(), gameInteger);
+            } catch (Exception e){
+                System.out.println(e.getMessage());
+            }
+        } else if (confirm.equals("N")){
+            System.out.println("Okay! Resignation Cancelled");
+        } else {
+            System.out.println("Error: Could not resign from game.");
+        }
         return "";
     }
 

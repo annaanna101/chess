@@ -19,8 +19,6 @@ public class GamePlayRepl {
     }
 
     public void run() {
-        //figure out how to get a chess game
-        ChessGame game = new ChessGame();
         Scanner scanner = new Scanner(System.in);
         String result = "";
 
@@ -32,29 +30,24 @@ public class GamePlayRepl {
                 System.out.println(result);
             }
             if (client.getGameState() == GamePlayState.NOGAMEPLAY){
-//                    new PostLoginRepl(client).run();
                 return;
             }
-//            if (line.startsWith("redraw")){
-////                System.out.println(client.getTeamColor());
-//                DrawBoard.drawCorrectBoard(client.getTeamColor(), client.getCurrentGame(), null, HighlightState.NOHIGHLIGHT);
+//            if (line.startsWith("resign")){
+//                System.out.println("Are you sure you want to resign [Y/N]");
+//                String confirm = scanner.nextLine().trim().toUpperCase();
+//
+//                if(confirm.equals("Y")){
+//                    try{
+//                        client.resign();
+//                    } catch (Exception e){
+//                        System.out.println(e.getMessage());
+//                    }
+//                } else if (confirm.equals("N")){
+//                    System.out.println("Okay! Resignation Cancelled");
+//                } else {
+//                    System.out.println("Error: Could not resign from game.");
+//                }
 //            }
-            if (line.startsWith("resign")){
-                System.out.println("Are you sure you want to resign [Y/N]");
-                String confirm = scanner.nextLine().trim().toUpperCase();
-
-                if(confirm.equals("Y")){
-                    try{
-                        client.resign();
-                    } catch (Exception e){
-                        System.out.println(e.getMessage());
-                    }
-                } else if (confirm.equals("N")){
-                    System.out.println("Okay! Resignation Cancelled");
-                } else {
-                    System.out.println("Error: Could not resign from game.");
-                }
-            }
 //            if (line.startsWith("highlight")){
 //                String[] tokens = line.split(" ");
 //                if (tokens[0] != null){

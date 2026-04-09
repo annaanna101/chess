@@ -147,6 +147,11 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         Integer gameId = command.getGameID();
         GameD game = dao.getGame(gameId);
         String status = game.getGameStatus();
+        if (game.getWhiteUsername() != null && !game.getWhiteUsername().contains(username)
+                && game.getBlackUsername() != null && !game.getBlackUsername().contains(username)){
+            sendMessage(session, new ErrorMessage("Error: Game can not be resigned. Observing."));
+            return;
+        }
         if (status.contains("Resigned")){
             sendMessage(session, new ErrorMessage("Error: This game has already been resigned."));
             return;
@@ -157,8 +162,10 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         }
         game.setStatus("Resigned");
         dao.updateGameStatus(gameId, game.getGameStatus());
-        sendMessage(session, new NotificationMessage(NotificationMessage.Type.RESIGN, String.format("%s has resigned the game. Congratulations!", username)));
-        connections.broadcast(gameId, session, new NotificationMessage(NotificationMessage.Type.RESIGN, String.format("%s has resigned the game. Congratulations!", username)));
+        sendMessage(session, new NotificationMessage(NotificationMessage.Type.RESIGN,
+                String.format("%s has resigned the game. Congratulations!", username)));
+        connections.broadcast(gameId, session, new NotificationMessage(NotificationMessage.Type.RESIGN,
+                String.format("%s has resigned the game. Congratulations!", username)));
         connections.remove(gameId, session);
     }
 

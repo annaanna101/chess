@@ -47,7 +47,8 @@ public class ServiceTest {
                                 g.getGameID(),
                                 g.getGameName(),
                                 g.getWhiteUsername(),
-                                g.getBlackUsername()))
+                                g.getBlackUsername(),
+                                g.getGameStatus()))
                                 .toList();
             }
 
@@ -86,7 +87,7 @@ public class ServiceTest {
             @Override
             public int createGame(String gameName) {
                 int id = nextGameID++;
-                games.put(id, new GameD(id, null, null, gameName, new ChessGame()));
+                games.put(id, new GameD(id, null, null, gameName, new ChessGame(), "In-Play"));
                 return id;
             }
 

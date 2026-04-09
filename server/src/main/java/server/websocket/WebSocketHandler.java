@@ -115,24 +115,23 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         try {
             chessGame.makeMove(move);
             dao.updateChessBoard(gameID, game, chessGame, game.getGameStatus());
-            if (chessGame.isInCheck(opponent)){
+            if (chessGame.isInCheckmate(opponent)){
                 connections.broadcast(gameID, null, new NotificationMessage(
-                        NotificationMessage.Type.MAKE_MOVE, String.format("%s is in check.", username)));
-            } else if (chessGame.isInCheckmate(opponent)){
-                connections.broadcast(gameID, null, new NotificationMessage(
-                        NotificationMessage.Type.MAKE_MOVE, String.format("%s is in checkmate.", username)));
+                        NotificationMessage.Type.MAKE_MOVE, String.format("%s is in checkmate.", opponent)));
                 dao.updateChessBoard(gameID, game, chessGame, "Completed");
-//                listOfCompletedGames.put(gameID, username);
+            } else if (chessGame.isInCheck(opponent)){
+                connections.broadcast(gameID, null, new NotificationMessage(
+                        NotificationMessage.Type.MAKE_MOVE, String.format("%s is in check.", opponent)));
             } else if (chessGame.isInStalemate(teamColor)){
                 dao.updateChessBoard(gameID, game, chessGame, "Completed");
-//                listOfCompletedGames.put(gameID,username);
             }
         } catch (InvalidMoveException e){
             sendMessage(session, new ErrorMessage("Invalid move: " + e.getMessage()));
             return;
         }
         connections.broadcast(gameID, null, new LoadGameMessage(username, chessGame));
-        var notification = new NotificationMessage(NotificationMessage.Type.MAKE_MOVE, String.format("%s made a move", username));
+        var notification = new NotificationMessage(NotificationMessage.Type.MAKE_MOVE,
+                String.format("%s made a move: %s", username, move.getEndPosition().toString()));
         connections.broadcast(gameID, session, notification);
     }
 
@@ -218,15 +217,21 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     private void connect(Session session, String username, ConnectCommand command) throws IOException, DataAccessException {
         Integer gameID = command.getGameID();
         var message = "";
-        if (username == null){
-            throw new DataAccessException("Username is null");
-        } else {
-            message = String.format("%s joined the game", username);
-        }
         GameD game = dao.getGame(gameID);
         if (game == null){
             throw new DataAccessException("This game does not exist");
         }
+        if (username == null){
+            throw new DataAccessException("Username is null");
+        }
+        String team;
+        String white = game.getWhiteUsername();
+        String black = game.getBlackUsername();
+        if (username.equals(white)) {team = "WHITE";}
+        else if (username.equals(black)) {team = "BLACK";}
+        else {team = "OBSERVER";}
+        message = String.format("%s joined the game as %s", username, team);
+
         saveSession(gameID, session);
         sendMessage(session, new LoadGameMessage(username, game.getGame()));
         var notification = new NotificationMessage(NotificationMessage.Type.CONNECT, message);

@@ -18,8 +18,6 @@ public class WebSocketFacade extends Endpoint {
 
     Session session;
     NotificationHandler notificationHandler;
-//    ErrorHandler errorHandler;
-//    LoadGameHandler loadGameHandler;
 
     public WebSocketFacade(String url, NotificationHandler notificationHandler) throws ResponseException {
         try {

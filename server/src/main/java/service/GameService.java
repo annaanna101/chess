@@ -1,5 +1,6 @@
 package service;
 
+import chess.ChessGame;
 import model.*;
 import dataaccess.DataAccess;
 import dataaccess.DataAccessException;
@@ -49,6 +50,20 @@ public class GameService {
             return Collections.emptyList();
         }
         return games;
+    }
+    // added
+    public ChessGame getGame(GameRequest gameRequest, String authToken) throws DataAccessException {
+        if (authToken == null){
+            throw new DataAccessException("Error: bad request");
+        }
+        if (dataAccess.getAuth(authToken) == null){
+            throw new DataAccessException("Error: unauthorized");
+        }
+        if (dataAccess.getGame(gameRequest.gameID()) == null){
+            throw new DataAccessException("Error: bad request");
+        }
+        GameD game = dataAccess.getGame(gameRequest.gameID());
+        return game.getGame();
     }
     public void clearGames() throws DataAccessException{
         dataAccess.clearGames();

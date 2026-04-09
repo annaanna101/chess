@@ -10,13 +10,17 @@ import java.util.Objects;
  */
 public class ChessPosition {
 
-    private final int row;
-    private final int col;
-
+    private int row;
+    private int col;
+    //added
+    public ChessPosition() {}
     public ChessPosition(int row, int col) {
         this.row = row;
         this.col = col;
     }
+    //added
+    public void setRow(int row) { this.row = row; }
+    public void setCol(int col) { this.col = col; }
 
     @Override
     public boolean equals(Object o) {

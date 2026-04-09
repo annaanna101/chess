@@ -33,6 +33,8 @@ public class Server {
         CreateGameHandler createGameHandler = new CreateGameHandler(gameService, helper);
         ListHandler listHandler = new ListHandler(gameService,helper);
         JoinHandler joinHandler = new JoinHandler(gameService);
+        // added
+        GetGameHandler gameHandler = new GetGameHandler(gameService);
 
         javalin = Javalin.create(config -> config.staticFiles.add("web"));
         // Register your endpoints and exception handlers here.
@@ -43,6 +45,7 @@ public class Server {
         javalin.post("/game", createGameHandler::createGame);
         javalin.get("/game", listHandler::listGames);
         javalin.put("/game", joinHandler::joinGame);
+        javalin.get("/game/{id}", gameHandler::getGame);
 
         javalin.exception(DataAccessException.class, (ex, ctx) -> {
             ctx.status(500);

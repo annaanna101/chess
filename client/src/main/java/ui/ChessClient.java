@@ -63,11 +63,11 @@ public class ChessClient implements NotificationHandler {
 
             if (gameState != GamePlayState.NOGAMEPLAY){
                 return switch (cmd) {
-//                    case "redraw" -> redraw();
+                    case "redraw" -> redraw();
                     case "leave" -> leave();
                     case "move" -> makeMove(params);
-//                    case "resign" -> resign();
-//                    case "highlight" -> highlight(params);
+                    case "resign" -> resign();
+                    case "highlight" -> highlight(params);
                     default ->  help();
                 };
             }
@@ -96,30 +96,44 @@ public class ChessClient implements NotificationHandler {
 //        System.out.println(">>> ");
     }
 
-    public ChessPosition highlight(String[] params) {
+    public String highlight(String[] params) {
         if (params.length != 1){
-            return null;
+            return "Error: Expected [piece location]";
         }
         String sMove = params[0].toLowerCase();
         char sCol = sMove.charAt(0);
         char sRow = sMove.charAt(1);
-        return decodeMove(sCol, sRow);
+        ChessPosition pos = decodeMove(sCol, sRow);
+        DrawBoard.drawCorrectBoard(teamColor, currentGame, pos, HighlightState.HIGHLIGHT);
+        return "";
     }
 
-    public void resign() throws ResponseException {
+    public String resign() throws ResponseException {
         if (gameState == GamePlayState.OBSERVING){
-            return;
+            return "ERROR: You are Observing, so you cannot resign.";
         }
         ws.resignGame(authToken.authToken(), gameInteger);
+        return "";
     }
 
     public String makeMove(String[] params) throws ResponseException {
         if (gameState == GamePlayState.OBSERVING){
             return "Error: You cannot make a move when observing a game.";
         }
+        if (params.length > 3){
+            return "ERROR: Expected move [piece location] [end move] [promote]";
+        }
+        if (params.length <= 1){
+            return "ERROR: Expected move [piece location] [end move] [promote]";
+        }
         String sMove = params[0].toLowerCase();
         String eMove = params[1].toLowerCase();
-        ChessPiece.PieceType promotion = getPieceType(params);
+        ChessPiece.PieceType promotion = null;
+        if (params.length == 3){
+            if (params[2] != null){
+                promotion = getPieceType(params);
+            }
+        }
 
         char sCol = sMove.charAt(0);
         char sRow = sMove.charAt(1);
@@ -128,11 +142,10 @@ public class ChessClient implements NotificationHandler {
         char eCol = eMove.charAt(0);
         char eRow = eMove.charAt(1);
         ChessPosition endPos = decodeMove(eCol, eRow);
-
         ChessMove move = new ChessMove(startPos, endPos, promotion);
-
         ws.makeMove(authToken.authToken(), gameInteger, move);
-        return null;
+        currentGame = server.getGame(authToken, new GameRequest(gameInteger));
+        return "";
     }
 
     private static ChessPiece.PieceType getPieceType(String[] params) {
@@ -178,7 +191,7 @@ public class ChessClient implements NotificationHandler {
             case '6' -> row = 6;
             case '7' -> row = 7;
             case '8' -> row = 8;
-            default -> throw new IllegalArgumentException("Invalid column");
+            default -> throw new IllegalArgumentException("Invalid row");
         }
         return new ChessPosition(row, col);
     }
@@ -189,11 +202,13 @@ public class ChessClient implements NotificationHandler {
         return null;
     }
 
-//    private String redraw() {
-//        //figure out if I need to return anything (like the team color)
-//        ChessGame game = get
-//        return (teamColor, game);
-//    }
+    private String redraw() {
+        if (currentGame == null){
+            return "ERROR: There is no game (game was null)";
+        }
+        DrawBoard.drawCorrectBoard(teamColor,currentGame, null, HighlightState.NOHIGHLIGHT);
+        return "";
+    }
 
     public Integer getRealGameID(int seqId) {
         GameSummary game = gameMap.get(seqId);
@@ -307,7 +322,7 @@ public class ChessClient implements NotificationHandler {
             gameState = GamePlayState.PLAYING;
             gameInteger = getRealGameID(seqId);
             //figure out how to get a game
-            currentGame = null;
+            currentGame = server.getGame(authToken, new GameRequest(gameInteger));
             teamColor = playerColor;
             ws.joinedGame(authToken.authToken(), realGameId);
             return String.format("You have now joined Game: %s as Team: %s", seqId, request.playerColor().toUpperCase(Locale.ROOT));
@@ -339,7 +354,7 @@ public class ChessClient implements NotificationHandler {
             gameInteger = getRealGameID(seqId);
             gameState = GamePlayState.OBSERVING;
             //figure out how to get a game
-            currentGame = null;
+            currentGame = server.getGame(authToken, new GameRequest(gameInteger));
             teamColor = "OBSERVE";
             ws.joinedGame(authToken.authToken(), game.gameID());
             return String.format("Observing game: %s (%s (white) vs %s (black))",

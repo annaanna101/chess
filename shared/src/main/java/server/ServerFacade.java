@@ -1,5 +1,6 @@
 package server;
 
+import chess.ChessGame;
 import com.google.gson.Gson;
 import model.*;
 
@@ -55,6 +56,17 @@ public class ServerFacade {
                 .build();
         var response = sendRequest(webRequest);
         return handleResponse(response, ListGameResult.class);
+    }
+    //added for Chess client
+    public ChessGame getGame(AuthD authToken, GameRequest request){
+        var webRequest = HttpRequest.newBuilder()
+                .uri(URI.create(serverUrl + "/game/" + request.gameID()))
+                .GET()
+                .header("Authorization", authToken.authToken())
+                .build();
+        var response = sendRequest(webRequest);
+        GetGameResult result =  handleResponse(response, GetGameResult.class);
+        return result.game();
     }
 
     public Object joinGame(JoinRequest request, AuthD authToken){

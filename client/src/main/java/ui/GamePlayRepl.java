@@ -33,9 +33,10 @@ public class GamePlayRepl {
 //                    new PostLoginRepl(client).run();
                 return;
             }
-            if (line.startsWith("redraw")){
-                DrawBoard.drawCorrectBoard(client.getTeamColor(), client.getCurrentGame(), null, HighlightState.NOHIGHLIGHT);
-            }
+//            if (line.startsWith("redraw")){
+////                System.out.println(client.getTeamColor());
+//                DrawBoard.drawCorrectBoard(client.getTeamColor(), client.getCurrentGame(), null, HighlightState.NOHIGHLIGHT);
+//            }
             if (line.startsWith("resign")){
                 System.out.println("Are you sure you want to resign [Y/N]");
                 String confirm = scanner.nextLine().trim().toUpperCase();
@@ -52,15 +53,15 @@ public class GamePlayRepl {
                     System.out.println("Error: Could not resign from game.");
                 }
             }
-            if (line.startsWith("highlight")){
-                String[] tokens = line.split(" ");
-                if (tokens[0] != null){
-                    ChessPosition start = client.highlight(tokens);
-                    DrawBoard.drawCorrectBoard(client.getTeamColor(), client.getCurrentGame(), start, HighlightState.HIGHLIGHT);
-                } else {
-                    System.out.print("Error: Expected [piece location]");
-                }
-            }
+//            if (line.startsWith("highlight")){
+//                String[] tokens = line.split(" ");
+//                if (tokens[0] != null){
+//                    ChessPosition start = client.highlight(tokens);
+//                    DrawBoard.drawCorrectBoard(client.getTeamColor(), client.getCurrentGame(), start, HighlightState.HIGHLIGHT);
+//                } else {
+//                    System.out.print("Error: Expected [piece location]");
+//                }
+//            }
 
         }
     }

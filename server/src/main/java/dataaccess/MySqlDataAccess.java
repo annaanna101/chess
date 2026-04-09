@@ -336,7 +336,7 @@ public class MySqlDataAccess implements DataAccess{
             )"""
     };
 
-
+    // look into creating another table for list of completed games.
     private void configureDatabase() throws DataAccessException {
         DatabaseManager.createDatabase();
         try (Connection conn = DatabaseManager.getConnection()) {

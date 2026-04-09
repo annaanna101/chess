@@ -22,10 +22,7 @@ import websocket.messages.LoadGameMessage;
 import websocket.messages.NotificationMessage;
 
 import java.io.IOException;
-import java.io.StreamCorruptedException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsCloseHandler {
@@ -86,15 +83,18 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         ChessMove move = command.getMove();
         Integer gameID = command.getGameID();
         GameD game = dao.getGame(gameID);
+        if (game == null){
+        }
         ChessGame chessGame = game.getGame();
+
         ChessGame.TeamColor teamColor;
-        ChessGame.TeamColor oppenent;
+        ChessGame.TeamColor opponent;
         if (game.getWhiteUsername() != null && game.getWhiteUsername().equals(username)){
             teamColor = ChessGame.TeamColor.WHITE;
-            oppenent = ChessGame.TeamColor.BLACK;
+            opponent = ChessGame.TeamColor.BLACK;
         }else if (game.getBlackUsername() != null && game.getBlackUsername().equals(username)){
             teamColor = ChessGame.TeamColor.BLACK;
-            oppenent = ChessGame.TeamColor.WHITE;
+            opponent = ChessGame.TeamColor.WHITE;
         } else {
             sendMessage(session, new ErrorMessage("Cannot make a move. User is observing"));
             return;
@@ -110,9 +110,9 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         try {
             chessGame.makeMove(move);
             dao.updateChessBoard(gameID, game, chessGame);
-            if (chessGame.isInCheck(oppenent)){
+            if (chessGame.isInCheck(opponent)){
                 connections.broadcast(gameID, null, new NotificationMessage(NotificationMessage.Type.MAKE_MOVE, String.format("%s is in check.", username)));
-            } else if (chessGame.isInCheckmate(oppenent)){
+            } else if (chessGame.isInCheckmate(opponent)){
                 connections.broadcast(gameID, null, new NotificationMessage(NotificationMessage.Type.MAKE_MOVE, String.format("%s is in checkmate.", username)));
                 listOfCompletedGames.put(gameID, username);
             } else if (chessGame.isInStalemate(teamColor)){
